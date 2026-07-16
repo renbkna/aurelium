@@ -4,8 +4,9 @@ import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
   build: {
-    sourcemap: true,
+    copyPublicDir: false,
     outDir: "dist",
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -16,6 +17,7 @@ export default defineConfig({
           ) {
             return "vendor";
           }
+          return undefined;
         },
       },
     },

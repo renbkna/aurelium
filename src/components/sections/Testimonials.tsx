@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FiChevronLeft, FiChevronRight, FiStar } from "react-icons/fi";
 import useAnimatedScroll from "../../hooks/useAnimatedScroll";
+import { responsiveImage } from "../../utils/responsiveImage";
+
+const starKeys = ["first", "second", "third", "fourth", "fifth"] as const;
 
 const Testimonials = () => {
   const [current, setCurrent] = useState(0);
@@ -99,7 +102,7 @@ const Testimonials = () => {
           <h2 className="heading-2 mb-6 text-white">
             Voices of Our <span className="text-gradient-gold">Travelers</span>
           </h2>
-          <p className="body-lg text-dark-300">
+          <p className="body-lg on-dark-text-secondary">
             Real stories from real explorers who trusted us with their journeys.
           </p>
         </motion.div>
@@ -125,7 +128,13 @@ const Testimonials = () => {
               {/* Photo */}
               <div className="relative mx-auto md:mx-0 w-fit shrink-0">
                 <div className="w-48 h-48 md:w-64 md:h-72 rounded-3xl overflow-hidden">
-                  <img src={t.image} alt={t.name} className="w-full h-full object-cover" />
+                  <img
+                    {...responsiveImage(t.image, "(max-width: 768px) 192px, 256px")}
+                    alt={t.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 {/* Decorative border */}
                 <div className="absolute -inset-3 rounded-3xl border border-secondary-400/20 -z-10" />
@@ -135,11 +144,9 @@ const Testimonials = () => {
               {/* Quote content */}
               <div>
                 <div className="flex items-center gap-1 mb-6">
-                  {Array(t.rating)
-                    .fill(0)
-                    .map((_, i) => (
-                      <FiStar key={i} className="text-secondary-400 fill-current" size={16} />
-                    ))}
+                  {starKeys.slice(0, t.rating).map((starKey) => (
+                    <FiStar key={starKey} className="text-secondary-400 fill-current" size={16} />
+                  ))}
                 </div>
 
                 <blockquote className="text-xl md:text-2xl lg:text-3xl font-heading text-white leading-relaxed mb-8">
@@ -148,7 +155,7 @@ const Testimonials = () => {
 
                 <div>
                   <p className="text-white font-semibold text-lg">{t.name}</p>
-                  <p className="text-dark-300 text-sm">
+                  <p className="on-dark-text-secondary text-sm">
                     {t.position} · {t.location}
                   </p>
                 </div>
@@ -160,9 +167,9 @@ const Testimonials = () => {
           <div className="flex items-center justify-between mt-14">
             {/* Dots */}
             <div className="flex gap-2">
-              {testimonials.map((_, index) => (
+              {testimonials.map((testimonial, index) => (
                 <button
-                  key={index}
+                  key={testimonial.id}
                   onClick={() => {
                     setDirection(index > current ? 1 : -1);
                     setCurrent(index);

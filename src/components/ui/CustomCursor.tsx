@@ -1,133 +1,100 @@
-import React, { useEffect, useState } from "react";
-import { motion, useMotionValue, useSpring } from "framer-motion";
+import { useEffect, useRef } from "react";
 
-const CustomCursor: React.FC = () => {
-  const [hovered, setHovered] = useState(false);
-  const [click, setClick] = useState(false);
+const interactiveSelector = 'a, button, [role="button"], [data-magnetic]';
+const nativeCursorSelector = 'input, textarea, select, [contenteditable="true"]';
 
-  const dotX = useMotionValue(-100);
-  const dotY = useMotionValue(-100);
-
-  const ringX = useSpring(dotX, { damping: 30, mass: 0.1, stiffness: 250 });
-  const ringY = useSpring(dotY, { damping: 30, mass: 0.1, stiffness: 250 });
+const CustomCursor = () => {
+  const positionRef = useRef<HTMLDivElement>(null);
+  const visualRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const getElementTarget = (event: MouseEvent): Element | null => {
-      return event.target instanceof Element ? event.target : null;
+    const root = document.documentElement;
+    const position = positionRef.current;
+    const visual = visualRef.current;
+    if (!position || !visual) {
+      return undefined;
+    }
+
+    let interactive = false;
+    let pressed = false;
+    let visible = false;
+    let usesNativeCursor = false;
+    let lastTarget: EventTarget | null = null;
+
+    const syncAppearance = () => {
+      visual.style.opacity = visible && !usesNativeCursor ? "1" : "0";
+      const scale = pressed ? 0.75 : interactive ? 2.8 : 1;
+      visual.style.transform = `translate(-50%, -50%) scale(${scale})`;
     };
 
-    const getRelatedNode = (event: MouseEvent): Node | null => {
-      return event.relatedTarget instanceof Node ? event.relatedTarget : null;
-    };
+    const handlePointerMove = (event: PointerEvent) => {
+      position.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
 
-    const moveCursor = (e: MouseEvent) => {
-      dotX.set(e.clientX);
-      dotY.set(e.clientY);
-    };
-
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = getElementTarget(e);
-      if (!target) {
-        return;
-      }
-
-      if (
-        target?.closest?.('a, button, input, select, textarea, [role="button"], [data-magnetic]')
-      ) {
-        setHovered(true);
-      }
-    };
-
-    const handleMouseOut = (e: MouseEvent) => {
-      const target = getElementTarget(e);
-      if (!target) {
-        return;
-      }
-
-      const relatedTarget = getRelatedNode(e);
-      const interactive = target?.closest?.(
-        'a, button, input, select, textarea, [role="button"], [data-magnetic]',
-      );
-
-      if (interactive && (!relatedTarget || !interactive.contains(relatedTarget))) {
-        setHovered(false);
+      if (event.target !== lastTarget) {
+        lastTarget = event.target;
+        const target = event.target instanceof Element ? event.target : null;
+        usesNativeCursor = Boolean(target?.closest(nativeCursorSelector));
+        interactive = Boolean(!usesNativeCursor && target?.closest(interactiveSelector));
+        visible = !usesNativeCursor;
+        syncAppearance();
+      } else if (!visible && !usesNativeCursor) {
+        visible = true;
+        syncAppearance();
       }
     };
+    const handlePointerDown = () => {
+      pressed = true;
+      syncAppearance();
+    };
+    const handlePointerUp = () => {
+      pressed = false;
+      syncAppearance();
+    };
+    const handlePointerLeave = (event: PointerEvent) => {
+      if (event.relatedTarget === null) {
+        visible = false;
+        pressed = false;
+        lastTarget = null;
+        syncAppearance();
+      }
+    };
+    const handleBlur = () => {
+      visible = false;
+      pressed = false;
+      syncAppearance();
+    };
 
-    const handleMouseDown = () => setClick(true);
-    const handleMouseUp = () => setClick(false);
-
-    window.addEventListener("mousemove", moveCursor);
-    window.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mouseup", handleMouseUp);
-    window.addEventListener("mouseover", handleMouseOver);
-    window.addEventListener("mouseout", handleMouseOut);
+    root.classList.add("custom-cursor-enabled");
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    window.addEventListener("pointerup", handlePointerUp, { passive: true });
+    window.addEventListener("pointerout", handlePointerLeave, { passive: true });
+    window.addEventListener("blur", handleBlur);
 
     return () => {
-      window.removeEventListener("mousemove", moveCursor);
-      window.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mouseup", handleMouseUp);
-      window.removeEventListener("mouseover", handleMouseOver);
-      window.removeEventListener("mouseout", handleMouseOut);
+      root.classList.remove("custom-cursor-enabled");
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointerout", handlePointerLeave);
+      window.removeEventListener("blur", handleBlur);
     };
-  }, [dotX, dotY]);
+  }, []);
 
   return (
-    <>
-      <style>{`
-        @media (min-width: 768px) {
-          * {
-            cursor: none !important;
-          }
-        }
-      `}</style>
-      {/* Trailing Outer Ring */}
-      <motion.div
-        className="fixed top-0 left-0 rounded-full flex items-center justify-center pointer-events-none mix-blend-difference z-10000 hidden md:flex"
-        style={{
-          x: ringX,
-          y: ringY,
-          translateX: "-50%",
-          translateY: "-50%",
-          originX: 0.5,
-          originY: 0.5,
-        }}
-        initial={false}
-        animate={{
-          width: hovered ? 80 : 36,
-          height: hovered ? 80 : 36,
-          backgroundColor: hovered ? "rgba(255, 255, 255, 1)" : "rgba(255, 255, 255, 0)",
-          border: hovered
-            ? "0px solid rgba(255, 255, 255, 0)"
-            : "1px solid rgba(255, 255, 255, 0.5)",
-          scale: click ? 0.85 : 1,
-        }}
-        transition={{
-          type: "spring",
-          damping: 25,
-          stiffness: 300,
-          mass: 0.4,
-        }}
+    <div
+      ref={positionRef}
+      aria-hidden="true"
+      data-custom-cursor
+      className="pointer-events-none fixed left-0 top-0 z-10000 will-change-transform"
+      style={{ transform: "translate3d(-100px, -100px, 0)" }}
+    >
+      <div
+        ref={visualRef}
+        className="size-2.5 rounded-full bg-white opacity-0 mix-blend-difference transition-[transform,opacity] duration-150 ease-out will-change-transform"
+        style={{ transform: "translate(-50%, -50%) scale(1)" }}
       />
-
-      {/* Instant Inner Dot */}
-      <motion.div
-        className="fixed top-0 left-0 rounded-full bg-white pointer-events-none mix-blend-difference z-10000 hidden md:block"
-        style={{
-          x: dotX,
-          y: dotY,
-          translateX: "-50%",
-          translateY: "-50%",
-          width: 5,
-          height: 5,
-          originX: 0.5,
-          originY: 0.5,
-          opacity: hovered ? 0 : 1,
-          scale: click && !hovered ? 0.5 : 1,
-        }}
-        transition={{ duration: 0.15 }}
-      />
-    </>
+    </div>
   );
 };
 

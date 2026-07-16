@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useEffect } from "react";
 import { motion, useInView, animate } from "framer-motion";
 import { FiAward, FiMapPin, FiShield, FiStar, FiUsers } from "react-icons/fi";
 import useAnimatedScroll from "../../hooks/useAnimatedScroll";
+import { responsiveImage } from "../../utils/responsiveImage";
 
 interface AnimatedCounterProps {
   from?: number;
@@ -23,7 +24,7 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   useEffect(() => {
     const node = nodeRef.current;
     if (!node) {
-      return;
+      return undefined;
     }
 
     const controls = animate(from, to, {
@@ -140,7 +141,7 @@ const Experience = () => {
   }, []);
 
   return (
-    <section id="experience" className="bg-warm-100 dark:bg-dark-900 relative overflow-hidden">
+    <section id="experience" className="theme-surface-canvas relative overflow-hidden">
       {/* Decorative blurs */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary-200/20 dark:bg-primary-900/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
       <div className="absolute bottom-0 left-0 w-72 h-72 bg-secondary-200/20 dark:bg-secondary-900/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
@@ -155,12 +156,12 @@ const Experience = () => {
           className="text-center max-w-3xl mx-auto mb-20"
         >
           <span className="label-text mb-4 block">Why Aurelium</span>
-          <h2 className="heading-2 mb-6 text-dark-800 dark:text-white">
+          <h2 className="heading-2 mb-6 theme-text-primary">
             Redefining <span className="text-gradient">Luxury Travel</span>
             <br />
             for the Modern Explorer
           </h2>
-          <p className="body-lg text-dark-400 dark:text-dark-200 max-w-2xl mx-auto">
+          <p className="body-lg theme-text-secondary max-w-2xl mx-auto">
             We believe true luxury is found in authentic experiences, cultural immersion, and
             personalized service that connects you deeply to every destination.
           </p>
@@ -173,9 +174,9 @@ const Experience = () => {
           variants={staggeredItems}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24"
         >
-          {featureCards.map((card, index) => (
+          {featureCards.map((card) => (
             <motion.div
-              key={index}
+              key={card.title}
               variants={featureItem}
               className="premium-card group cursor-default"
               onMouseMove={handleMouseMove}
@@ -189,11 +190,9 @@ const Experience = () => {
                 {card.icon}
               </div>
 
-              <h3 className="text-xl font-bold mb-3 text-dark-800 dark:text-white">{card.title}</h3>
+              <h3 className="text-xl font-bold mb-3 theme-text-primary">{card.title}</h3>
 
-              <p className="text-dark-400 dark:text-dark-200 text-sm leading-relaxed">
-                {card.description}
-              </p>
+              <p className="theme-text-secondary text-sm leading-relaxed">{card.description}</p>
 
               {/* Bottom accent line */}
               <div className="mt-6 h-[2px] w-0 group-hover:w-full bg-linear-to-r from-primary-500 to-secondary-400 transition-all duration-700 rounded-full" />
@@ -211,14 +210,15 @@ const Experience = () => {
         >
           {/* Background */}
           <div className="absolute inset-0 bg-linear-to-br from-primary-700 via-primary-800 to-dark-900" />
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1540544660406-6a69dacb2804?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')",
-              backgroundPosition: "center",
-              backgroundSize: "cover",
-            }}
+          <img
+            {...responsiveImage(
+              "https://images.unsplash.com/photo-1540544660406-6a69dacb2804?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80",
+              "100vw",
+            )}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 h-full w-full object-cover object-center opacity-10"
           />
 
           {/* Decorative elements */}
@@ -235,7 +235,7 @@ const Experience = () => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
               {stats.map((stat, index) => (
-                <div key={index} className="text-center group">
+                <div key={stat.label} className="text-center group">
                   <div className="flex items-center justify-center gap-1 mb-2">
                     <span className="text-4xl md:text-5xl lg:text-6xl font-bold font-heading">
                       {statsInView ? (

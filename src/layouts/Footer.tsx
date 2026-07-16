@@ -77,22 +77,12 @@ const Footer = () => {
             <h2 className="text-4xl md:text-5xl lg:text-6xl font-heading font-bold mb-6 leading-tight">
               Ready for your next <span className="text-gradient-gold">adventure?</span>
             </h2>
-            <p className="text-dark-300 text-lg mb-10 max-w-xl mx-auto">
+            <p className="on-dark-text-secondary text-lg mb-10 max-w-xl mx-auto">
               Let our travel experts create a bespoke journey tailored to your dreams.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <motion.button
-                className="btn btn-accent btn-lg"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Plan My Trip
-              </motion.button>
-              <motion.button
-                className="btn glass-premium text-white border-dark-600 hover:border-secondary-400/30 btn-lg"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
+              <motion.button className="btn btn-accent btn-lg">Plan My Trip</motion.button>
+              <motion.button className="btn glass-premium text-white border-dark-600 hover:border-secondary-400/30 btn-lg">
                 Explore Destinations
               </motion.button>
             </div>
@@ -141,22 +131,22 @@ const Footer = () => {
               </svg>
               <span className="font-display text-xl font-bold">Aurelium</span>
             </div>
-            <p className="text-dark-300 text-sm leading-relaxed mb-6">
+            <p className="on-dark-text-secondary text-sm leading-relaxed mb-6">
               Crafting extraordinary travel experiences for discerning adventurers since 2010.
               Luxury meets authenticity in every journey.
             </p>
             <div className="flex gap-2">
-              {socialLinks.map((link, index) => (
-                <motion.a
-                  key={index}
-                  href={link.url}
+              {socialLinks.map((link) => (
+                <motion.button
+                  key={link.label}
+                  type="button"
                   aria-label={link.label}
-                  className="w-9 h-9 rounded-full bg-dark-700 text-dark-300 hover:bg-primary-600 hover:text-white flex items-center justify-center transition-all duration-300 text-xs"
+                  className="w-9 h-9 rounded-full bg-dark-700 on-dark-text-secondary hover:bg-primary-600 hover:text-white flex items-center justify-center transition-all duration-300 text-xs"
                   whileHover={{ scale: 1.1, y: -2 }}
                   whileTap={{ scale: 0.9 }}
                 >
                   {link.icon}
-                </motion.a>
+                </motion.button>
               ))}
             </div>
           </motion.div>
@@ -172,11 +162,11 @@ const Footer = () => {
               Destinations
             </h3>
             <motion.ul className="space-y-2.5" variants={staggerChildren}>
-              {destinations.map((dest, index) => (
-                <motion.li key={index} variants={fadeInUp}>
+              {destinations.map((dest) => (
+                <motion.li key={dest} variants={fadeInUp}>
                   <a
-                    href="#"
-                    className="text-dark-300 hover:text-white text-sm transition-colors duration-300 flex items-center gap-2 group"
+                    href="#destinations"
+                    className="on-dark-text-secondary hover:text-white text-sm transition-colors duration-300 flex items-center gap-2 group"
                   >
                     <span className="w-1 h-1 bg-dark-500 group-hover:bg-secondary-400 rounded-full transition-colors" />
                     {dest}
@@ -197,11 +187,11 @@ const Footer = () => {
               Experiences
             </h3>
             <motion.ul className="space-y-2.5" variants={staggerChildren}>
-              {experiences.map((exp, index) => (
-                <motion.li key={index} variants={fadeInUp}>
+              {experiences.map((exp) => (
+                <motion.li key={exp} variants={fadeInUp}>
                   <a
-                    href="#"
-                    className="text-dark-300 hover:text-white text-sm transition-colors duration-300 flex items-center gap-2 group"
+                    href="#experience"
+                    className="on-dark-text-secondary hover:text-white text-sm transition-colors duration-300 flex items-center gap-2 group"
                   >
                     <span className="w-1 h-1 bg-dark-500 group-hover:bg-secondary-400 rounded-full transition-colors" />
                     {exp}
@@ -224,15 +214,17 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <FiMapPin className="text-primary-500 mt-0.5 flex-shrink-0" size={14} />
-                <span className="text-dark-300 text-sm">123 Voyage Avenue, New York, NY 10001</span>
+                <span className="on-dark-text-secondary text-sm">
+                  123 Voyage Avenue, New York, NY 10001
+                </span>
               </li>
               <li className="flex items-center gap-3">
                 <FiPhone className="text-primary-500 flex-shrink-0" size={14} />
-                <span className="text-dark-300 text-sm">+1 (555) 123-4567</span>
+                <span className="on-dark-text-secondary text-sm">+1 (555) 123-4567</span>
               </li>
               <li className="flex items-center gap-3">
                 <FiMail className="text-primary-500 flex-shrink-0" size={14} />
-                <span className="text-dark-300 text-sm">hello@aurelium.com</span>
+                <span className="on-dark-text-secondary text-sm">hello@aurelium.com</span>
               </li>
             </ul>
           </motion.div>
@@ -240,12 +232,14 @@ const Footer = () => {
 
         {/* Bottom bar */}
         <div className="pt-8 border-t border-dark-700/40 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-dark-400 text-xs">© {currentYear} Aurelium. All rights reserved.</p>
+          <p className="on-dark-text-secondary text-xs">
+            © {currentYear} Aurelium. All rights reserved.
+          </p>
 
           {/* Back to top */}
           <motion.button
             onClick={scrollToTop}
-            className="text-dark-400 hover:text-secondary-400 text-xs flex items-center gap-2 transition-colors"
+            className="on-dark-text-secondary hover:text-secondary-400 text-xs flex items-center gap-2 transition-colors"
             whileHover={{ y: -2 }}
           >
             Back to top <FiArrowUp size={12} />
@@ -253,13 +247,13 @@ const Footer = () => {
 
           <div className="flex gap-6">
             {["Privacy", "Terms", "Cookies"].map((text) => (
-              <a
+              <button
+                type="button"
                 key={text}
-                href="#"
-                className="text-dark-400 hover:text-white text-xs transition-colors"
+                className="on-dark-text-secondary hover:text-white text-xs transition-colors"
               >
                 {text}
-              </a>
+              </button>
             ))}
           </div>
         </div>

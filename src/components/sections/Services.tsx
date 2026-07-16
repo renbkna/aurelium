@@ -1,7 +1,5 @@
-import React, { useEffect, useRef } from "react";
-import { motion } from "framer-motion";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import React, { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import {
   FiCamera,
   FiCoffee,
@@ -13,45 +11,21 @@ import {
   FiWifi,
 } from "react-icons/fi";
 import useAnimatedScroll from "../../hooks/useAnimatedScroll";
-
-gsap.registerPlugin(ScrollTrigger);
+import { responsiveImage } from "../../utils/responsiveImage";
 
 const Services = () => {
   const sectionRef = useRef(null);
-  const imageRef = useRef(null);
   const [titleRef, titleControls] = useAnimatedScroll({ threshold: 0.1 });
-
-  useEffect(() => {
-    const imageElement = imageRef.current;
-    const animations: gsap.core.Tween[] = [];
-
-    if (imageElement && sectionRef.current) {
-      const imageTween = gsap.fromTo(
-        imageElement,
-        { clipPath: "inset(20% 0 20% 0)", y: 60 },
-        {
-          clipPath: "inset(0% 0 0% 0)",
-          duration: 1.2,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 80%",
-            end: "center center",
-            scrub: 1,
-          },
-          y: 0,
-        },
-      );
-      animations.push(imageTween);
-    }
-
-    return () => {
-      animations.forEach((tween) => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
-      });
-    };
-  }, []);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start 80%", "center center"],
+  });
+  const clipPath = useTransform(
+    scrollYProgress,
+    [0, 1],
+    ["inset(20% 0 20% 0)", "inset(0% 0 0% 0)"],
+  );
+  const imageY = useTransform(scrollYProgress, [0, 1], [60, 0]);
 
   const fadeIn = {
     hidden: { opacity: 0, y: 50 },
@@ -109,7 +83,7 @@ const Services = () => {
   ];
 
   return (
-    <section id="services" className="bg-warm-50 dark:bg-dark-800 overflow-hidden" ref={sectionRef}>
+    <section id="services" className="theme-surface-subtle overflow-hidden" ref={sectionRef}>
       <div className="section-container">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
           {/* Image side */}
@@ -118,11 +92,16 @@ const Services = () => {
             <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary-200/20 dark:bg-primary-900/10 rounded-full mix-blend-multiply blur-3xl" />
             <div className="absolute -bottom-16 -right-12 w-64 h-64 bg-secondary-200/20 dark:bg-secondary-900/10 rounded-full mix-blend-multiply blur-3xl" />
 
-            <div ref={imageRef} className="relative z-10">
+            <motion.div className="relative z-10" style={{ clipPath, y: imageY }}>
               <div className="rounded-3xl overflow-hidden shadow-premium">
                 <img
-                  src="https://images.unsplash.com/photo-1540541338287-41700207dee6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80"
+                  {...responsiveImage(
+                    "https://images.unsplash.com/photo-1540541338287-41700207dee6?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
+                    "(max-width: 1024px) 100vw, 50vw",
+                  )}
                   alt="Premium travel service"
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-[500px] lg:h-[600px] object-cover"
                 />
               </div>
@@ -138,25 +117,28 @@ const Services = () => {
                 <p className="text-primary-600 dark:text-primary-400 font-semibold text-xs uppercase tracking-wider mb-2">
                   Client Review
                 </p>
-                <p className="text-dark-700 dark:text-dark-200 text-sm italic mb-4 leading-relaxed">
+                <p className="theme-text-primary text-sm italic mb-4 leading-relaxed">
                   "The attention to detail exceeded all our expectations. Truly the best travel
                   experience we've ever had."
                 </p>
                 <div className="flex items-center gap-3">
                   <img
-                    src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80"
+                    {...responsiveImage(
+                      "https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80",
+                      "40px",
+                    )}
                     alt="Sarah Johnson"
+                    loading="lazy"
+                    decoding="async"
                     className="w-10 h-10 rounded-full object-cover"
                   />
                   <div>
-                    <p className="font-semibold text-sm text-dark-800 dark:text-white">
-                      Sarah Johnson
-                    </p>
-                    <p className="text-xs text-dark-400">Amalfi Coast Journey</p>
+                    <p className="font-semibold text-sm theme-text-primary">Sarah Johnson</p>
+                    <p className="text-xs theme-text-muted">Amalfi Coast Journey</p>
                   </div>
                 </div>
               </motion.div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Content side */}
@@ -169,12 +151,12 @@ const Services = () => {
               className="max-w-xl"
             >
               <span className="label-text mb-4 block">Our Services</span>
-              <h2 className="heading-2 mb-6 text-dark-800 dark:text-white">
+              <h2 className="heading-2 mb-6 theme-text-primary">
                 Exceptional <span className="text-gradient">Travel Services</span>
                 <br />
                 Beyond the Ordinary
               </h2>
-              <p className="body-lg text-dark-400 dark:text-dark-200 mb-12">
+              <p className="body-lg theme-text-secondary mb-12">
                 From expert-guided tours to personalized concierge service, every aspect of your
                 journey is crafted with meticulous attention.
               </p>
@@ -183,8 +165,8 @@ const Services = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {services.map((service, index) => (
                   <motion.div
-                    key={index}
-                    className="group flex gap-4 p-4 rounded-2xl hover:bg-white dark:hover:bg-dark-700 transition-all duration-300 cursor-default"
+                    key={service.title}
+                    className="theme-surface-hover group flex gap-4 p-4 rounded-2xl transition-all duration-300 cursor-default"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -194,10 +176,10 @@ const Services = () => {
                       {service.icon}
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold mb-1 text-dark-800 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                      <h3 className="text-sm font-bold mb-1 theme-text-primary group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                         {service.title}
                       </h3>
-                      <p className="text-dark-400 dark:text-dark-300 text-xs leading-relaxed max-h-0 group-hover:max-h-20 overflow-hidden transition-all duration-500">
+                      <p className="service-description theme-text-muted text-xs leading-relaxed overflow-hidden transition-all duration-500">
                         {service.description}
                       </p>
                     </div>

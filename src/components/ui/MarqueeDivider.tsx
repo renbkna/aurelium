@@ -1,4 +1,7 @@
 import React from "react";
+import { useReducedMotion } from "framer-motion";
+import { useInView } from "react-intersection-observer";
+import { usePageVisibility } from "../../hooks/usePageVisibility";
 
 interface MarqueeDividerProps {
   texts?: string[];
@@ -9,14 +12,19 @@ interface MarqueeDividerProps {
   dark?: boolean;
 }
 
+const defaultTexts = ["Discover", "Explore", "Experience", "Dream", "Wander", "Journey"];
+
 const MarqueeDivider: React.FC<MarqueeDividerProps> = ({
-  texts = ["Discover", "Explore", "Experience", "Dream", "Wander", "Journey"],
+  texts = defaultTexts,
   separator = "✦",
   reverse = false,
   speed = 30,
   className = "",
   dark = false,
 }) => {
+  const [containerRef, inView] = useInView({ rootMargin: "200px 0px", threshold: 0 });
+  const reduceMotion = useReducedMotion();
+  const isPageVisible = usePageVisibility();
   const content = texts.map((t, i) => (
     <span key={t + String(i)} className="inline-flex items-center gap-8 mx-8">
       <span>{t}</span>
@@ -28,10 +36,12 @@ const MarqueeDivider: React.FC<MarqueeDividerProps> = ({
 
   const animationStyle: React.CSSProperties = {
     animationDuration: `${speed}s`,
+    animationPlayState: inView && isPageVisible && !reduceMotion ? "running" : "paused",
   };
 
   return (
     <div
+      ref={containerRef}
       className={`marquee-container py-6 border-y ${
         dark ? "border-dark-700/40 bg-dark-900" : "border-warm-200/60 bg-warm-50"
       } ${className}`}
@@ -42,7 +52,7 @@ const MarqueeDivider: React.FC<MarqueeDividerProps> = ({
       >
         <span
           className={`inline-flex items-center font-heading text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight ${
-            dark ? "text-dark-300" : "text-dark-200"
+            dark ? "on-dark-text-secondary" : "theme-text-muted"
           }`}
         >
           {content}

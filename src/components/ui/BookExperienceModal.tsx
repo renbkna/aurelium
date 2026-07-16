@@ -1,6 +1,15 @@
 import React, { useEffect, useId, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { FiCalendar, FiMapPin, FiPhone, FiSend, FiUsers, FiX } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiCompass,
+  FiMail,
+  FiMapPin,
+  FiSend,
+  FiUser,
+  FiUsers,
+  FiX,
+} from "react-icons/fi";
 
 const destinations = [
   "Santorini, Greece",
@@ -8,6 +17,7 @@ const destinations = [
   "Bali, Indonesia",
   "Marrakech, Morocco",
   "Patagonia, Argentina",
+  "I'm not sure yet",
 ];
 
 const experiences = [
@@ -20,258 +30,262 @@ const experiences = [
 
 interface BookExperienceModalProps {
   isOpen: boolean;
-  onClose?: () => void;
+  onClose: () => void;
 }
 
+const focusableSelector = [
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "a[href]",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
 const BookExperienceModal = ({ isOpen, onClose }: BookExperienceModalProps) => {
-  const initialFocusRef = useRef<HTMLSelectElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const initialFocusRef = useRef<HTMLInputElement>(null);
   const headingId = useId();
+  const descriptionId = useId();
 
   useEffect(() => {
-    if (typeof document === "undefined") {
+    if (!isOpen) {
       return undefined;
     }
 
-    if (isOpen) {
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      const focusTimer = window.setTimeout(() => {
-        initialFocusRef.current?.focus();
-      }, 20);
+    const previousOverflow = document.body.style.overflow;
+    const activeElement =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const previousFocus = activeElement === document.body ? null : activeElement;
+    const focusTimer = window.setTimeout(() => initialFocusRef.current?.focus(), 20);
 
-      return () => {
-        document.body.style.overflow = previousOverflow;
-        window.clearTimeout(focusTimer);
-      };
-    }
-    return;
-  }, [isOpen]);
-
-  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isOpen) {
-        onClose?.();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusable = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>(focusableSelector) ?? [],
+      ).filter((element) => element.getClientRects().length > 0);
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (!first || !last) {
+        event.preventDefault();
+        return;
+      }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
       }
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
+      window.clearTimeout(focusTimer);
+
+      window.setTimeout(() => {
+        if (previousFocus?.isConnected) {
+          previousFocus.focus();
+          return;
+        }
+        const fallback = Array.from(
+          document.querySelectorAll<HTMLElement>(
+            '[aria-label="Open navigation menu"], [data-book-experience-trigger]',
+          ),
+        ).find((element) => element.getClientRects().length > 0);
+        fallback?.focus();
+      }, 0);
+    };
   }, [isOpen, onClose]);
 
-  const handleBackdropInteraction = (event: React.MouseEvent | React.TouchEvent) => {
+  const handleBackdropInteraction = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
-      onClose?.();
+      onClose();
     }
   };
 
   const inputClasses =
-    "w-full rounded-xl border border-warm-200 dark:border-dark-600 bg-white dark:bg-dark-700 px-4 py-3 text-sm text-dark-800 dark:text-white focus:border-primary-500 focus:ring-2 focus:ring-primary-400/20 transition-all duration-300";
+    "w-full rounded-xl border theme-border-control theme-surface-raised-strong px-4 py-3 text-sm theme-text-primary focus:border-primary-500 focus:ring-2 focus:ring-primary-400/20 transition-all duration-300";
+  const labelClasses =
+    "text-xs font-semibold theme-text-muted uppercase tracking-wider flex items-center gap-1.5 mb-2";
 
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 z-100 bg-dark-900/70 backdrop-blur-sm flex items-center justify-center px-4 py-8"
+          className="fixed inset-0 z-100 bg-dark-900/70 backdrop-blur-sm flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          onMouseDown={handleBackdropInteraction}
-          onTouchStart={handleBackdropInteraction}
+          onPointerDown={handleBackdropInteraction}
         >
-          <motion.div
-            className="relative w-full max-w-3xl bg-white dark:bg-dark-800 rounded-3xl shadow-premium overflow-hidden border border-warm-200 dark:border-dark-700"
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          <motion.dialog
+            ref={dialogRef}
+            open
+            className="relative m-0 flex max-h-[min(40rem,calc(100dvh-2rem))] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border theme-border-subtle theme-surface-raised shadow-premium sm:rounded-3xl"
+            initial={{ opacity: 0, scale: 0.96, y: 24 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            transition={{ damping: 25, stiffness: 200, type: "spring" }}
-            role="dialog"
+            exit={{ opacity: 0, scale: 0.97, y: 16 }}
+            transition={{ damping: 28, stiffness: 260, type: "spring" }}
             aria-modal="true"
             aria-labelledby={headingId}
+            aria-describedby={descriptionId}
           >
-            <button
-              type="button"
-              className="absolute top-5 right-5 p-2 rounded-full bg-warm-200/60 dark:bg-dark-700 text-dark-600 dark:text-dark-200 hover:bg-warm-200 dark:hover:bg-dark-600 transition-colors z-10"
-              onClick={onClose}
-              aria-label="Close booking modal"
+            <header className="relative shrink-0 border-b theme-border-subtle px-5 py-5 pr-16 sm:px-8 sm:py-6 sm:pr-20">
+              <span className="label-text">Tailored Consultation</span>
+              <h2
+                id={headingId}
+                className="mt-2 text-2xl font-heading font-semibold theme-text-primary sm:text-3xl"
+              >
+                Design your bespoke experience
+              </h2>
+              <p id={descriptionId} className="mt-2 max-w-xl text-sm theme-text-secondary">
+                Tell us where you want to go. A dedicated concierge will follow up within one
+                business day.
+              </p>
+
+              <button
+                type="button"
+                className="absolute right-4 top-4 rounded-full p-2.5 theme-surface-raised-strong theme-text-secondary transition-colors hover:bg-warm-200 dark:hover:bg-dark-600 sm:right-6 sm:top-6"
+                onClick={onClose}
+                aria-label="Close booking modal"
+              >
+                <FiX size={18} />
+              </button>
+            </header>
+
+            <form
+              className="flex min-h-0 flex-1 flex-col"
+              onSubmit={(event: React.FormEvent) => {
+                event.preventDefault();
+                onClose();
+              }}
             >
-              <FiX size={18} />
-            </button>
-
-            <div className="grid grid-cols-1 md:grid-cols-[1.1fr_0.9fr]">
-              <div className="p-8 md:p-10">
-                <div className="mb-6">
-                  <span className="label-text">Tailored Consultation</span>
-                  <h3
-                    id={headingId}
-                    className="mt-3 text-2xl md:text-3xl font-heading font-semibold text-dark-800 dark:text-white"
-                  >
-                    Design your bespoke experience
-                  </h3>
-                  <p className="mt-2 text-sm text-dark-400 dark:text-dark-200">
-                    Share your dream getaway details and we'll craft a personalized itinerary within
-                    24 hours.
-                  </p>
-                </div>
-
-                <form
-                  className="space-y-4"
-                  onSubmit={(event: React.FormEvent) => {
-                    event.preventDefault();
-                    onClose?.();
-                  }}
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label className="block">
-                      <span className="text-xs font-semibold text-dark-500 dark:text-dark-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                        <FiMapPin className="text-primary-500" size={12} /> Destination
-                      </span>
-                      <select
-                        ref={initialFocusRef}
-                        className={inputClasses}
-                        defaultValue=""
-                        required
-                      >
-                        <option value="" disabled>
-                          Choose destination
-                        </option>
-                        {destinations.map((option) => (
-                          <option key={option} value={option}>
-                            {option}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label className="block">
-                      <span className="text-xs font-semibold text-dark-500 dark:text-dark-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                        <FiCalendar className="text-primary-500" size={12} /> Dates
-                      </span>
-                      <input
-                        type="text"
-                        className={inputClasses}
-                        placeholder="e.g. 10–18 May 2025"
-                        required
-                      />
-                    </label>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <label className="block">
-                      <span className="text-xs font-semibold text-dark-500 dark:text-dark-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                        <FiUsers className="text-primary-500" size={12} /> Travelers
-                      </span>
-                      <input
-                        type="number"
-                        min="1"
-                        className={inputClasses}
-                        placeholder="Number of guests"
-                        required
-                      />
-                    </label>
-
-                    <label className="block">
-                      <span className="text-xs font-semibold text-dark-500 dark:text-dark-300 uppercase tracking-wider flex items-center gap-1.5 mb-2">
-                        <FiPhone className="text-primary-500" size={12} /> Phone
-                      </span>
-                      <input
-                        type="tel"
-                        className={inputClasses}
-                        placeholder="+1 (555) 123-4567"
-                        required
-                      />
-                    </label>
-                  </div>
-
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-5 sm:px-8 sm:py-6">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <label className="block">
-                    <span className="text-xs font-semibold text-dark-500 dark:text-dark-300 uppercase tracking-wider mb-2 block">
-                      Experience type
+                    <span className={labelClasses}>
+                      <FiUser className="text-primary-500" size={12} /> Name
                     </span>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {experiences.map((experience) => (
-                        <label key={experience} className="relative block cursor-pointer">
-                          <input
-                            type="radio"
-                            name="experience"
-                            value={experience}
-                            className="peer sr-only"
-                            required
-                          />
-                          <span className="flex items-center justify-center rounded-xl border border-warm-200 dark:border-dark-600 bg-white dark:bg-dark-700 px-3 py-2.5 text-center text-xs font-medium text-dark-500 dark:text-dark-300 transition-all peer-checked:border-primary-500 peer-checked:bg-primary-50 peer-checked:text-primary-700 dark:peer-checked:bg-primary-900/20 dark:peer-checked:text-primary-300 hover:border-primary-300 dark:hover:border-primary-500/30">
-                            {experience}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </label>
-
-                  <label className="block">
-                    <span className="text-xs font-semibold text-dark-500 dark:text-dark-300 uppercase tracking-wider mb-2 block">
-                      Details
-                    </span>
-                    <textarea
+                    <input
+                      ref={initialFocusRef}
+                      type="text"
+                      name="name"
+                      autoComplete="name"
                       className={inputClasses}
-                      rows={3}
-                      placeholder="Tell us about your dream journey..."
+                      placeholder="Your name"
+                      required
                     />
                   </label>
 
-                  <motion.button
-                    type="submit"
-                    className="w-full btn btn-primary py-3.5"
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                  >
-                    Request Itinerary <FiSend size={14} />
-                  </motion.button>
-                </form>
+                  <label className="block">
+                    <span className={labelClasses}>
+                      <FiMail className="text-primary-500" size={12} /> Email
+                    </span>
+                    <input
+                      type="email"
+                      name="email"
+                      autoComplete="email"
+                      className={inputClasses}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </label>
 
-                <p className="mt-4 text-[11px] text-dark-300 dark:text-dark-400">
-                  A concierge will reach out within one business day.
-                </p>
-              </div>
+                  <label className="block">
+                    <span className={labelClasses}>
+                      <FiMapPin className="text-primary-500" size={12} /> Destination
+                    </span>
+                    <select name="destination" className={inputClasses} defaultValue="" required>
+                      <option value="" disabled>
+                        Choose a destination
+                      </option>
+                      {destinations.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
 
-              {/* Right panel */}
-              <div className="hidden md:flex flex-col justify-center bg-linear-to-br from-primary-700 via-primary-800 to-dark-900 text-white p-8">
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="text-lg font-heading font-semibold">What happens next?</h4>
-                    <ul className="mt-4 space-y-3 text-sm text-white/60">
-                      <li className="flex gap-2">
-                        <span className="text-secondary-400">•</span>
-                        Dedicated concierge call tailored to your preferences.
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-secondary-400">•</span>
-                        Curated itinerary with luxury stays and insider access.
-                      </li>
-                      <li className="flex gap-2">
-                        <span className="text-secondary-400">•</span>
-                        Complimentary adjustments until everything feels perfect.
-                      </li>
-                    </ul>
-                  </div>
+                  <label className="block">
+                    <span className={labelClasses}>
+                      <FiCalendar className="text-primary-500" size={12} /> Approximate dates
+                    </span>
+                    <input
+                      type="text"
+                      name="dates"
+                      className={inputClasses}
+                      placeholder="Early October or flexible"
+                      required
+                    />
+                  </label>
 
-                  <div className="glass-premium rounded-2xl p-5">
-                    <p className="text-sm text-white/60 italic">
-                      "Aurelium anticipated every detail—the experience felt truly bespoke."
-                    </p>
-                    <p className="mt-3 text-sm font-semibold text-secondary-300">
-                      Amelia R., Amalfi Coast
-                    </p>
-                  </div>
+                  <label className="block">
+                    <span className={labelClasses}>
+                      <FiUsers className="text-primary-500" size={12} /> Travelers
+                    </span>
+                    <input
+                      type="number"
+                      name="travelers"
+                      min="1"
+                      inputMode="numeric"
+                      className={inputClasses}
+                      placeholder="Number of guests"
+                      required
+                    />
+                  </label>
 
-                  <div className="text-sm text-white/40">
-                    Prefer to talk?{" "}
-                    <a
-                      href="tel:+15551234567"
-                      className="font-semibold text-secondary-400 hover:underline"
-                    >
-                      Call our team
-                    </a>
-                  </div>
+                  <label className="block">
+                    <span className={labelClasses}>
+                      <FiCompass className="text-primary-500" size={12} /> Experience
+                    </span>
+                    <select name="experience" className={inputClasses} defaultValue="" required>
+                      <option value="" disabled>
+                        Choose an experience
+                      </option>
+                      {experiences.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label className="block sm:col-span-2">
+                    <span className={labelClasses}>Optional details</span>
+                    <textarea
+                      name="details"
+                      className={inputClasses}
+                      rows={2}
+                      placeholder="Tell us what would make this journey unforgettable..."
+                    />
+                  </label>
                 </div>
               </div>
-            </div>
-          </motion.div>
+
+              <footer className="shrink-0 border-t theme-border-subtle px-5 py-4 sm:flex sm:items-center sm:justify-between sm:gap-6 sm:px-8">
+                <p className="mb-3 text-[11px] theme-text-muted sm:mb-0">
+                  No commitment—just thoughtful planning with a travel expert.
+                </p>
+                <button type="submit" className="btn btn-primary w-full shrink-0 py-3 sm:w-auto">
+                  Request Consultation <FiSend size={14} />
+                </button>
+              </footer>
+            </form>
+          </motion.dialog>
         </motion.div>
       )}
     </AnimatePresence>

@@ -1,10 +1,7 @@
-import React, { Suspense, useEffect, useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import React, { useCallback, useState } from "react";
 import Header from "./layouts/Header";
 import Footer from "./layouts/Footer";
-import Loader from "./components/ui/Loader";
 import ScrollToTop from "./components/ui/ScrollToTop";
-import SmoothScroll from "./components/ui/SmoothScroll";
 import CustomCursor from "./components/ui/CustomCursor";
 import NoiseOverlay from "./components/ui/NoiseOverlay";
 import BookExperienceModal from "./components/ui/BookExperienceModal";
@@ -13,139 +10,104 @@ import MarqueeDivider from "./components/ui/MarqueeDivider";
 import { useTheme } from "./contexts/ThemeContext";
 
 import Hero from "./components/sections/Hero";
-
-const Experience = React.lazy(() => import("./components/sections/Experience"));
-const Destinations = React.lazy(() => import("./components/sections/Destinations"));
-const ExclusiveOffers = React.lazy(() => import("./components/sections/ExclusiveOffers"));
-const Services = React.lazy(() => import("./components/sections/Services"));
-const Gallery = React.lazy(() => import("./components/sections/Gallery"));
-const Testimonials = React.lazy(() => import("./components/sections/Testimonials"));
-const Newsletter = React.lazy(() => import("./components/sections/Newsletter"));
-const Contact = React.lazy(() => import("./components/sections/Contact"));
+import Experience from "./components/sections/Experience";
+import Destinations from "./components/sections/Destinations";
+import ExclusiveOffers from "./components/sections/ExclusiveOffers";
+import Services from "./components/sections/Services";
+import Gallery from "./components/sections/Gallery";
+import Testimonials from "./components/sections/Testimonials";
+import Newsletter from "./components/sections/Newsletter";
+import Contact from "./components/sections/Contact";
+import { useMediaQuery } from "./hooks/useMediaQuery";
+import { ScrollRuntimeProvider } from "./runtime/ScrollRuntime";
 
 function App() {
-  const [loading, setLoading] = useState(true);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const openBooking = useCallback(() => setIsBookingOpen(true), []);
+  const closeBooking = useCallback(() => setIsBookingOpen(false), []);
   const { theme } = useTheme();
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 2200);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const hasDesktopPointer = useMediaQuery(
+    "(min-width: 768px) and (hover: hover) and (pointer: fine)",
+  );
+  const showSectionNavigator = useMediaQuery("(min-width: 1024px)");
 
   return (
-    <SmoothScroll>
+    <ScrollRuntimeProvider>
       <div className={theme}>
         <NoiseOverlay />
-        <CustomCursor />
-        <AnimatePresence mode="wait">{loading && <Loader key="loader" />}</AnimatePresence>
+        {hasDesktopPointer && <CustomCursor />}
 
-        <Header onBookExperience={() => setIsBookingOpen(true)} />
-        <BookExperienceModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} />
-        <main className="overflow-hidden">
-          <Hero />
+        <Header onBookExperience={openBooking} />
+        <BookExperienceModal isOpen={isBookingOpen} onClose={closeBooking} />
+        <main>
+          <Hero onBookExperience={openBooking} />
 
-          <Suspense
-            fallback={
-              <div className="h-[50vh] flex items-center justify-center bg-warm-100 dark:bg-dark-900">
-                <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spinner" />
-              </div>
-            }
-          >
-            <MarqueeDivider
-              texts={[
-                "Santorini",
-                "Kyoto",
-                "Bali",
-                "Marrakech",
-                "Patagonia",
-                "Amalfi",
-                "Maldives",
-                "Iceland",
-              ]}
-              separator="◆"
-              dark={theme === "dark"}
-            />
-            <Experience />
-            <MarqueeDivider
-              texts={[
-                "Discover",
-                "Explore",
-                "Experience",
-                "Wander",
-                "Dream",
-                "Journey",
-                "Adventure",
-              ]}
-              separator="✦"
-              reverse
-              speed={35}
-              dark={theme === "dark"}
-            />
-          </Suspense>
+          <MarqueeDivider
+            texts={[
+              "Santorini",
+              "Kyoto",
+              "Bali",
+              "Marrakech",
+              "Patagonia",
+              "Amalfi",
+              "Maldives",
+              "Iceland",
+            ]}
+            separator="◆"
+            dark={theme === "dark"}
+          />
+          <Experience />
+          <MarqueeDivider
+            texts={["Discover", "Explore", "Experience", "Wander", "Dream", "Journey", "Adventure"]}
+            separator="✦"
+            reverse
+            speed={35}
+            dark={theme === "dark"}
+          />
 
-          <Suspense
-            fallback={
-              <div className="h-[50vh] flex items-center justify-center bg-warm-100 dark:bg-dark-900">
-                <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spinner" />
-              </div>
-            }
-          >
-            <Destinations />
-            <ExclusiveOffers />
-            <MarqueeDivider
-              texts={[
-                "Luxury",
-                "Authentic",
-                "Bespoke",
-                "Curated",
-                "Premium",
-                "Exclusive",
-                "Extraordinary",
-              ]}
-              separator="●"
-              speed={40}
-              dark={theme === "dark"}
-            />
-          </Suspense>
+          <Destinations />
+          <ExclusiveOffers />
+          <MarqueeDivider
+            texts={[
+              "Luxury",
+              "Authentic",
+              "Bespoke",
+              "Curated",
+              "Premium",
+              "Exclusive",
+              "Extraordinary",
+            ]}
+            separator="●"
+            speed={40}
+            dark={theme === "dark"}
+          />
 
-          <Suspense
-            fallback={
-              <div className="h-[50vh] flex items-center justify-center bg-warm-100 dark:bg-dark-900">
-                <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spinner" />
-              </div>
-            }
-          >
-            <Services />
-            <Gallery />
-            <MarqueeDivider
-              texts={[
-                "Culture",
-                "Nature",
-                "Cuisine",
-                "Architecture",
-                "History",
-                "Wildlife",
-                "Heritage",
-              ]}
-              separator="◇"
-              reverse
-              speed={28}
-              dark={theme === "dark"}
-            />
-            <Testimonials />
-            <Newsletter />
-            <Contact />
-          </Suspense>
+          <Services />
+          <Gallery />
+          <MarqueeDivider
+            texts={[
+              "Culture",
+              "Nature",
+              "Cuisine",
+              "Architecture",
+              "History",
+              "Wildlife",
+              "Heritage",
+            ]}
+            separator="◇"
+            reverse
+            speed={28}
+            dark={theme === "dark"}
+          />
+          <Testimonials />
+          <Newsletter />
+          <Contact />
         </main>
         <Footer />
         <ScrollToTop />
-        <SectionNavigator />
+        {showSectionNavigator && <SectionNavigator />}
       </div>
-    </SmoothScroll>
+    </ScrollRuntimeProvider>
   );
 }
 

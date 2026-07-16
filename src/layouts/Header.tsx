@@ -1,58 +1,86 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Variants } from "framer-motion";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
 import { useTheme } from "../contexts/ThemeContext";
+import { useMediaQuery } from "../hooks/useMediaQuery";
+import { NAV_ITEMS, useScrollRuntime } from "../runtime/ScrollRuntime";
 
 interface HeaderProps {
-  onBookExperience?: () => void;
+  onBookExperience: () => void;
 }
 
-const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
+const Header = ({ onBookExperience }: HeaderProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState("hero");
+  const [showFullNavigation, setShowFullNavigation] = useState(false);
+  const showBookingAction = useMediaQuery("(min-width: 768px)");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const navigationRef = useRef<HTMLElement>(null);
+  const persistentActionsRef = useRef<HTMLDivElement>(null);
   const { toggleTheme, isDark } = useTheme();
+  const { activeSection, scrolled, scrollToSection } = useScrollRuntime();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    const logo = logoRef.current;
+    const navigation = navigationRef.current;
+    const persistentActions = persistentActionsRef.current;
+    if (!container || !logo || !navigation || !persistentActions) {
+      return undefined;
+    }
+
+    let active = true;
+    const measure = () => {
+      const styles = window.getComputedStyle(container);
+      const contentWidth =
+        container.clientWidth -
+        Number.parseFloat(styles.paddingLeft) -
+        Number.parseFloat(styles.paddingRight);
+      const sideWidth = Math.max(logo.offsetWidth, persistentActions.offsetWidth);
+      const requiredWidth = navigation.scrollWidth + sideWidth * 2 + 32;
+      if (active) {
+        setShowFullNavigation(contentWidth >= requiredWidth);
+      }
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(container);
+    observer.observe(logo);
+    observer.observe(navigation);
+    observer.observe(persistentActions);
+    void document.fonts?.ready.then(measure);
+    measure();
+
+    return () => {
+      active = false;
+      observer.disconnect();
+    };
+  }, [showBookingAction]);
 
   useEffect(() => {
-    const sections = navItems
-      .map((item) => document.getElementById(item.to))
-      .filter((el): el is HTMLElement => el !== null);
-    if (sections.length === 0) {
-      return;
+    if (showFullNavigation) {
+      setIsOpen(false);
     }
+  }, [showFullNavigation]);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: "-40% 0px -55% 0px" },
-    );
-
-    sections.forEach((section) => observer.observe(section));
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollToSection = useCallback((sectionId: string) => {
-    const el = document.querySelector(`#${sectionId}`);
-    if (el) {
-      const offset = 80;
-      const top = el.getBoundingClientRect().top + window.scrollY - offset;
-      window.scrollTo({ behavior: "smooth", top });
+  useEffect(() => {
+    if (!isOpen) {
+      return undefined;
     }
-  }, []);
+    const previousOverflow = document.body.style.overflow;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [isOpen]);
 
   const navVariants = {
     hidden: { opacity: 0, y: -20 },
@@ -61,7 +89,7 @@ const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
       transition: {
         duration: 0.6,
         staggerChildren: 0.08,
-        delayChildren: 1.5,
+        delayChildren: 0.2,
       },
       y: 0,
     },
@@ -89,33 +117,32 @@ const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
     },
   };
 
-  const navItems = [
-    { name: "Home", offset: -80, to: "hero" },
-    { name: "Experiences", offset: -80, to: "experience" },
-    { name: "Destinations", offset: -80, to: "destinations" },
-    { name: "Services", offset: -80, to: "services" },
-    { name: "Gallery", offset: -80, to: "gallery" },
-    { name: "Stories", offset: -80, to: "testimonials" },
-    { name: "Contact", offset: -80, to: "contact" },
-  ];
+  const navItems = NAV_ITEMS.map(({ id, label }) => ({ name: label, to: id }));
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 w-full transition-all duration-700 ${
         scrolled
-          ? "py-3 bg-white/80 dark:bg-dark-900/80 backdrop-blur-xl shadow-sm border-b border-warm-200/50 dark:border-dark-700/50"
+          ? "py-3 theme-header-surface backdrop-blur-xl shadow-sm border-b"
           : "py-5 bg-transparent"
       }`}
     >
       <motion.div
-        className="section-container flex items-center justify-between"
+        ref={containerRef}
+        className={`mx-auto grid w-full max-w-[1440px] items-center px-4 sm:px-6 lg:px-8 ${
+          showFullNavigation ? "grid-cols-[1fr_auto_1fr]" : "grid-cols-[1fr_auto]"
+        }`}
         initial="hidden"
         animate="visible"
         variants={navVariants}
       >
         {/* Logo */}
-        <motion.div className="flex items-center" variants={itemVariants}>
-          <a href="/" className="flex items-center gap-2">
+        <motion.div
+          ref={logoRef}
+          className="flex items-center justify-self-start"
+          variants={itemVariants}
+        >
+          <a href="/" aria-label="Aurelium home" className="flex items-center gap-2">
             <motion.div
               className={`text-2xl font-bold flex items-center group ${
                 scrolled ? "text-primary-600 dark:text-primary-400" : "text-white"
@@ -153,7 +180,7 @@ const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
               </svg>
               <span
                 className={`font-display font-bold text-xl ${
-                  scrolled ? "text-dark-800 dark:text-white" : "text-white"
+                  scrolled ? "theme-text-primary" : "text-white"
                 }`}
               >
                 Aurelium
@@ -163,17 +190,25 @@ const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
         </motion.div>
 
         {/* Desktop Nav */}
-        <motion.nav className="hidden lg:flex items-center gap-1" variants={navVariants}>
+        <motion.nav
+          ref={navigationRef}
+          aria-hidden={!showFullNavigation}
+          inert={!showFullNavigation}
+          className={`items-center justify-self-center gap-0 xl:gap-1 ${
+            showFullNavigation ? "relative flex" : "invisible absolute flex"
+          }`}
+          variants={navVariants}
+        >
           {navItems.map((item) => (
             <motion.div key={item.name} variants={itemVariants}>
               <button
                 type="button"
                 onClick={() => scrollToSection(item.to)}
-                className={`relative px-4 py-2 text-sm font-medium cursor-pointer transition-all duration-300 rounded-full ${
+                className={`relative px-2 py-2 text-[13px] xl:px-4 xl:text-sm font-medium cursor-pointer transition-all duration-300 rounded-full ${
                   scrolled
                     ? activeSection === item.to
                       ? "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20"
-                      : "text-dark-600 hover:text-primary-600 dark:text-dark-200 dark:hover:text-primary-400"
+                      : "theme-text-secondary hover:text-primary-600 dark:hover:text-primary-400"
                     : activeSection === item.to
                       ? "text-white bg-white/10"
                       : "text-white/70 hover:text-white"
@@ -186,51 +221,59 @@ const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
         </motion.nav>
 
         {/* Right side */}
-        <motion.div className="flex items-center gap-3" variants={itemVariants}>
-          <motion.button
-            onClick={toggleTheme}
-            className={`p-2.5 rounded-full transition-all duration-300 ${
-              scrolled
-                ? "text-dark-600 hover:text-primary-600 hover:bg-primary-50 dark:text-dark-200 dark:hover:text-primary-400 dark:hover:bg-primary-900/20"
-                : "text-white/70 hover:text-white hover:bg-white/10"
-            }`}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
-          </motion.button>
+        <motion.div className="flex items-center gap-3 justify-self-end" variants={itemVariants}>
+          <div ref={persistentActionsRef} className="flex items-center gap-3">
+            <motion.button
+              onClick={toggleTheme}
+              aria-label={isDark ? "Use light theme" : "Use dark theme"}
+              className={`p-2.5 rounded-full transition-all duration-300 ${
+                scrolled
+                  ? "theme-text-secondary hover:text-primary-600 hover:bg-primary-50 dark:hover:text-primary-400 dark:hover:bg-primary-900/20"
+                  : "text-white/70 hover:text-white hover:bg-white/10"
+              }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isDark ? <FiSun size={18} /> : <FiMoon size={18} />}
+            </motion.button>
 
-          <motion.button
-            className={`hidden md:flex btn text-sm ${
-              scrolled
-                ? "btn-primary"
-                : "glass-premium text-white border-white/10 hover:bg-white/10"
-            }`}
-            onClick={onBookExperience}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            Book Experience
-          </motion.button>
+            {showBookingAction && (
+              <button
+                type="button"
+                className={`header-booking-action btn text-[13px] xl:text-sm ${
+                  scrolled
+                    ? "btn-primary"
+                    : "glass-premium text-white border-white/10 hover:bg-white/10"
+                }`}
+                data-book-experience-trigger
+                onClick={onBookExperience}
+              >
+                Book Experience
+              </button>
+            )}
+          </div>
 
-          <motion.button
-            onClick={() => setIsOpen(!isOpen)}
-            className={`lg:hidden p-2.5 rounded-full ${
-              scrolled ? "text-dark-800 dark:text-white" : "text-white"
-            }`}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
-          </motion.button>
+          {!showFullNavigation && (
+            <motion.button
+              type="button"
+              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={isOpen}
+              onClick={() => setIsOpen(!isOpen)}
+              className={`p-2.5 rounded-full ${scrolled ? "theme-text-primary" : "text-white"}`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isOpen ? <FiX size={22} /> : <FiMenu size={22} />}
+            </motion.button>
+          )}
         </motion.div>
       </motion.div>
 
       {/* Mobile Menu */}
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !showFullNavigation && (
           <motion.div
-            className="lg:hidden fixed inset-0 z-50 bg-dark-900/98 backdrop-blur-xl"
+            className="fixed inset-0 z-50 bg-dark-900/98 backdrop-blur-xl"
             initial="closed"
             animate="open"
             exit="closed"
@@ -239,6 +282,8 @@ const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
             {/* Close button */}
             <div className="absolute top-5 right-5">
               <motion.button
+                type="button"
+                aria-label="Close navigation menu"
                 onClick={() => setIsOpen(false)}
                 className="text-white p-2"
                 whileTap={{ scale: 0.9 }}
@@ -274,7 +319,9 @@ const Header = ({ onBookExperience = () => {} }: HeaderProps) => {
               ))}
 
               <motion.button
+                type="button"
                 className="mt-8 btn btn-accent btn-lg"
+                data-book-experience-trigger
                 onClick={() => {
                   onBookExperience();
                   setIsOpen(false);

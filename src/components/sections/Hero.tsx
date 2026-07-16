@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { Variants } from "framer-motion";
-import { motion, AnimatePresence } from "framer-motion";
-import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { usePageVisibility } from "../../hooks/usePageVisibility";
+import { useScrollRuntime } from "../../runtime/ScrollRuntime";
+import { responsiveImage } from "../../utils/responsiveImage";
 
 const heroImages = [
   "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80",
@@ -21,68 +21,40 @@ const floatingPills = [
   { delay: 1.6, label: "Patagonia", x: "55%", y: "82%" },
 ];
 
-const Hero = () => {
-  const heroRef = useRef(null);
-  const parallaxRef = useRef(null);
-  const textRef = useRef(null);
+interface HeroProps {
+  onBookExperience: () => void;
+}
+
+const Hero = ({ onBookExperience }: HeroProps) => {
+  const heroRef = useRef<HTMLElement>(null);
   const [currentImage, setCurrentImage] = useState(0);
+  const isHeroVisible = useInView(heroRef, { amount: 0.05 });
+  const isPageVisible = usePageVisibility();
+  const showFloatingPills = useMediaQuery("(min-width: 1024px)");
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const { scrollToSection } = useScrollRuntime();
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const imageY = useTransform(scrollYProgress, [0, 1], [0, 200]);
+  const imageScale = useTransform(scrollYProgress, [0, 1], [1, 1.1]);
+  const textY = useTransform(scrollYProgress, [0.05, 0.3], [0, 100]);
+  const textOpacity = useTransform(scrollYProgress, [0.05, 0.3], [1, 0]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    if (!isHeroVisible || !isPageVisible || reduceMotion) {
+      return undefined;
+    }
+    const interval = window.setInterval(() => {
       setCurrentImage((prev) => (prev + 1) % heroImages.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const animations: gsap.core.Tween[] = [];
-    const parallaxElement = parallaxRef.current;
-    const textElement = textRef.current;
-
-    if (parallaxElement && heroRef.current) {
-      const parallaxTween = gsap.to(parallaxElement, {
-        ease: "none",
-        scale: 1.1,
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-        y: 200,
-      });
-      animations.push(parallaxTween);
-    }
-
-    if (textElement && heroRef.current) {
-      const textTween = gsap.to(textElement, {
-        ease: "power2.out",
-        opacity: 0,
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: "5% top",
-          end: "30% top",
-          scrub: true,
-        },
-        y: 100,
-      });
-      animations.push(textTween);
-    }
-
-    return () => {
-      animations.forEach((tween) => {
-        tween.scrollTrigger?.kill();
-        tween.kill();
-      });
-    };
-  }, []);
+  }, [isHeroVisible, isPageVisible, reduceMotion]);
 
   const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: {
-        delayChildren: 3.4,
+        delayChildren: 0.3,
         staggerChildren: 0.12,
       },
     },
@@ -108,7 +80,7 @@ const Hero = () => {
       opacity: 1,
       scale: 1,
       transition: {
-        delay: 4.2 + delay,
+        delay: 1.2 + delay,
         type: "spring",
         stiffness: 200,
         damping: 15,
@@ -119,12 +91,16 @@ const Hero = () => {
   return (
     <section id="hero" className="relative h-screen overflow-hidden" ref={heroRef}>
       {/* Background Image Carousel with Parallax */}
-      <div className="absolute inset-0" style={{ transform: "translateZ(0)" }} ref={parallaxRef}>
+      <motion.div
+        className="absolute inset-0"
+        style={{ scale: imageScale, transform: "translateZ(0)", y: imageY }}
+      >
         <AnimatePresence mode="sync">
           <motion.img
             key={currentImage}
-            src={heroImages[currentImage]}
+            {...responsiveImage(heroImages[currentImage], "100vw")}
             alt="Hero Background"
+            fetchPriority={currentImage === 0 ? "high" : "auto"}
             className="absolute inset-0 w-full h-[120%] object-cover object-center"
             style={{ transform: "translateZ(0)" }}
             initial={{ opacity: 0, scale: 1.1 }}
@@ -137,7 +113,7 @@ const Hero = () => {
         {/* Gradient overlays */}
         <div className="absolute inset-0 bg-linear-to-b from-dark-900/60 via-dark-900/30 to-dark-900/80" />
         <div className="absolute inset-0 bg-linear-to-r from-dark-900/50 via-transparent to-dark-900/30" />
-      </div>
+      </motion.div>
 
       {/* Grain texture overlay (Moved outside parallax container for performance) */}
       <div
@@ -148,41 +124,46 @@ const Hero = () => {
       />
 
       {/* Floating destination pills */}
-      <div className="absolute inset-0 z-10 hidden lg:block">
-        {floatingPills.map((pill, i) => (
-          <motion.div
-            key={i}
-            className="absolute"
-            style={{ left: pill.x, top: pill.y }}
-            custom={pill.delay}
-            variants={pillVariants}
-            initial="hidden"
-            animate="visible"
-          >
+      {showFloatingPills && (
+        <div className="absolute inset-0 z-10">
+          {floatingPills.map((pill, i) => (
             <motion.div
-              className="glass-premium px-4 py-2 rounded-full text-white/70 text-xs font-accent tracking-widest uppercase cursor-default select-none"
-              animate={{
-                y: [0, -8, 0],
-              }}
-              transition={{
-                delay: i * 0.3,
-                duration: 3 + i * 0.5,
-                ease: "easeInOut",
-                repeat: Infinity,
-              }}
-              whileHover={{
-                backgroundColor: "rgba(27,122,90,0.3)",
-                scale: 1.1,
-              }}
+              key={pill.label}
+              className="absolute"
+              style={{ left: pill.x, top: pill.y }}
+              custom={pill.delay}
+              variants={pillVariants}
+              initial="hidden"
+              animate="visible"
             >
-              {pill.label}
+              <motion.div
+                className="glass-premium px-4 py-2 rounded-full text-white/70 text-xs font-accent tracking-widest uppercase cursor-default select-none"
+                animate={{
+                  y: [0, -8, 0],
+                }}
+                transition={{
+                  delay: i * 0.3,
+                  duration: 3 + i * 0.5,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                }}
+                whileHover={{
+                  backgroundColor: "rgba(27,122,90,0.3)",
+                  scale: 1.1,
+                }}
+              >
+                {pill.label}
+              </motion.div>
             </motion.div>
-          </motion.div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Hero Content */}
-      <div className="relative z-20 h-full flex items-center justify-center" ref={textRef}>
+      <motion.div
+        className="relative z-20 h-full flex items-center justify-center"
+        style={{ opacity: textOpacity, y: textY }}
+      >
         <div className="section-container">
           <motion.div
             className="max-w-5xl mx-auto text-center"
@@ -226,32 +207,33 @@ const Hero = () => {
               variants={itemVariants}
             >
               <motion.button
+                type="button"
                 data-magnetic="true"
-                className="btn btn-accent btn-lg w-full sm:w-auto"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                data-book-experience-trigger
+                className="btn btn-accent btn-lg w-full max-w-64 sm:w-auto sm:max-w-none"
+                onClick={onBookExperience}
               >
                 Begin Your Journey
               </motion.button>
 
               <motion.button
+                type="button"
                 data-magnetic="true"
-                className="btn glass-premium text-white border-white/10 btn-lg w-full sm:w-auto hover:bg-white/10"
-                whileHover={{ scale: 1.05, y: -2 }}
-                whileTap={{ scale: 0.95 }}
+                className="hero-secondary-action btn btn-lg w-full max-w-64 text-white sm:w-auto sm:max-w-none"
+                onClick={() => scrollToSection("destinations")}
               >
                 Explore Destinations
               </motion.button>
             </motion.div>
           </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Image counter dots */}
       <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-        {heroImages.map((_, i) => (
+        {heroImages.map((source, i) => (
           <button
-            key={i}
+            key={source}
             onClick={() => setCurrentImage(i)}
             className={`transition-all duration-500 rounded-full ${
               i === currentImage
@@ -268,7 +250,7 @@ const Hero = () => {
         className="absolute bottom-10 left-1/2 transform -translate-x-1/2 z-20 text-white/50 text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 5.2, duration: 1 }}
+        transition={{ delay: 1.5, duration: 1 }}
       >
         <motion.div
           className="flex flex-col items-center cursor-pointer group"

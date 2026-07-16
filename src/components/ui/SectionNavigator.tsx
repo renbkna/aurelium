@@ -1,115 +1,27 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-
-interface NavItem {
-  id: string;
-  label: string;
-}
-
-const NAV_ITEMS: NavItem[] = [
-  { id: "hero", label: "Home" },
-  { id: "experience", label: "Experience" },
-  { id: "destinations", label: "Destinations" },
-  { id: "services", label: "Services" },
-  { id: "gallery", label: "Gallery" },
-  { id: "testimonials", label: "Stories" },
-  { id: "contact", label: "Contact" },
-];
-
-const handleNavigate = (sectionId: string) => {
-  const target = document.querySelector(`#${sectionId}`);
-  if (!target) {
-    return;
-  }
-
-  const offset = 80;
-  const targetPosition = target.getBoundingClientRect().top + window.scrollY - offset;
-
-  window.scrollTo({
-    behavior: "smooth",
-    top: targetPosition,
-  });
-};
+import { NAV_ITEMS, useScrollRuntime } from "../../runtime/ScrollRuntime";
 
 const SectionNavigator: React.FC = () => {
-  const [activeSection, setActiveSection] = useState(NAV_ITEMS[0]?.id ?? "");
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const navItems = useMemo(() => NAV_ITEMS, []);
-
-  useEffect(() => {
-    const handleScrollProgress = () => {
-      const doc = document.documentElement;
-      const scrollTop = window.scrollY;
-      const maxScroll = doc.scrollHeight - window.innerHeight;
-      const progress = maxScroll > 0 ? Math.min((scrollTop / maxScroll) * 100, 100) : 0;
-      setScrollProgress(progress);
-    };
-
-    handleScrollProgress();
-    window.addEventListener("scroll", handleScrollProgress, { passive: true });
-    window.addEventListener("resize", handleScrollProgress);
-
-    return () => {
-      window.removeEventListener("scroll", handleScrollProgress);
-      window.removeEventListener("resize", handleScrollProgress);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-
-    const handleActiveSection = () => {
-      const probe = window.scrollY + window.innerHeight * 0.35;
-      let current = navItems[0]?.id ?? "";
-
-      navItems.forEach(({ id }) => {
-        const section = document.querySelector<HTMLElement>(`#${id}`);
-        if (!section) {
-          return;
-        }
-
-        const sectionTop = section.getBoundingClientRect().top + window.scrollY;
-        if (probe >= sectionTop) {
-          current = id;
-        }
-      });
-
-      setActiveSection(current);
-    };
-
-    handleActiveSection();
-    window.addEventListener("scroll", handleActiveSection, { passive: true });
-    window.addEventListener("resize", handleActiveSection);
-
-    return () => {
-      window.removeEventListener("scroll", handleActiveSection);
-      window.removeEventListener("resize", handleActiveSection);
-    };
-  }, [navItems]);
-
-  if (navItems.length === 0) {
-    return null;
-  }
+  const { activeSection, progress, scrollToSection } = useScrollRuntime();
 
   return (
     <div className="pointer-events-none fixed right-8 top-1/2 z-40 hidden -translate-y-1/2 lg:flex">
       <div className="relative flex min-h-[300px] flex-col items-center">
         {/* Progress line */}
-        <div className="h-full w-[1.5px] overflow-hidden rounded-full bg-dark-200/20 dark:bg-dark-700/40">
+        <div className="theme-navigation-track h-full w-[1.5px] overflow-hidden rounded-full">
           <motion.div
-            className="w-full rounded-full"
+            className="h-full w-full origin-top rounded-full"
             style={{
               background: "linear-gradient(to bottom, #1b7a5a, #d4a574)",
-              height: `${scrollProgress}%`,
+              scaleY: progress,
             }}
           />
         </div>
 
         {/* Dots */}
         <div className="absolute inset-0 flex flex-col justify-between py-2">
-          {navItems.map(({ id, label }) => {
+          {NAV_ITEMS.map(({ id, label }) => {
             const isActive = id === activeSection;
 
             return (
@@ -117,7 +29,7 @@ const SectionNavigator: React.FC = () => {
                 key={id}
                 type="button"
                 className="pointer-events-auto group relative flex h-8 w-8 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400/60 rounded-full"
-                onClick={() => handleNavigate(id)}
+                onClick={() => scrollToSection(id)}
                 aria-label={`Go to ${label}`}
                 aria-current={isActive ? "true" : undefined}
               >
@@ -125,7 +37,7 @@ const SectionNavigator: React.FC = () => {
                   className={`relative flex items-center justify-center rounded-full transition-all duration-300 ${
                     isActive
                       ? "h-3 w-3 bg-secondary-400 shadow-glow-gold"
-                      : "h-2 w-2 bg-dark-300/40 dark:bg-dark-500 group-hover:bg-primary-400"
+                      : "theme-navigation-dot h-2 w-2 group-hover:bg-primary-400"
                   }`}
                   layout
                 >

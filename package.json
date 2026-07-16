@@ -7,31 +7,32 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "oxlint --deny correctness --deny suspicious --deny-warnings --import-plugin --react-plugin --jsx-a11y-plugin --promise-plugin . && tsc --noEmit",
-    "lint:fix": "oxlint --deny correctness --deny suspicious --import-plugin --react-plugin --jsx-a11y-plugin --promise-plugin --fix .",
+    "lint": "oxlint --deny-warnings . && tsc --noEmit && node scripts/check-performance-contracts.mjs",
+    "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "deps:check": "knip"
+    "deps:check": "knip",
+    "perf:check": "node scripts/check-performance-contracts.mjs"
   },
   "dependencies": {
-    "framer-motion": "^12.38.0",
-    "gsap": "^3.14.2",
-    "lenis": "^1.3.21",
-    "react": "^19.2.4",
-    "react-dom": "^19.2.4",
-    "react-icons": "^5.6.0",
-    "react-intersection-observer": "^10.0.3"
+    "framer-motion": "^12.42.2",
+    "lenis": "^1.3.25",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-icons": "^5.7.0",
+    "react-intersection-observer": "^10.1.0"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.2.2",
-    "@types/react": "^19.2.14",
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "knip": "^6.1.0",
-    "oxfmt": "^0.42.0",
-    "oxlint": "^1.57.0",
-    "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2",
-    "vite": "^8.0.3"
+    "@vitejs/plugin-react": "^6.0.3",
+    "knip": "^6.27.0",
+    "oxfmt": "^0.59.0",
+    "oxlint": "^1.74.0",
+    "oxlint-tsgolint": "^0.24.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5"
   }
 }

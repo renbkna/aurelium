@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { FiAward, FiCheck, FiGift, FiMapPin, FiSend } from "react-icons/fi";
 import useAnimatedScroll from "../../hooks/useAnimatedScroll";
+import { responsiveImage } from "../../utils/responsiveImage";
 
 const Newsletter = () => {
   const [email, setEmail] = useState("");
@@ -51,7 +52,7 @@ const Newsletter = () => {
   ];
 
   return (
-    <section className="bg-warm-100 dark:bg-dark-900 overflow-hidden">
+    <section className="theme-surface-canvas overflow-hidden">
       <div className="section-container">
         <motion.div
           ref={containerRef}
@@ -69,12 +70,15 @@ const Newsletter = () => {
         >
           {/* Background */}
           <div className="absolute inset-0">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1682685797742-42c9987a2c34?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80')",
-              }}
+            <img
+              {...responsiveImage(
+                "https://images.unsplash.com/photo-1682685797742-42c9987a2c34?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80",
+                "100vw",
+              )}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-center"
             />
             <div className="absolute inset-0 bg-linear-to-br from-primary-900/95 via-primary-800/90 to-dark-900/95" />
           </div>
@@ -135,24 +139,19 @@ const Newsletter = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="Your email address"
-                        className="w-full px-6 py-4 rounded-full bg-white/5 border border-white/20 text-white placeholder:text-white/30 focus:outline-none focus:border-secondary-400/60 focus:bg-white/10 transition-all duration-500"
+                        className="w-full px-6 py-4 rounded-xl bg-white/5 border border-white/20 text-white placeholder:text-white/30 focus:outline-none focus:border-secondary-400/60 focus:bg-white/10 transition-all duration-500"
                         required
                       />
                       {/* Animated focus ring */}
-                      <div className="absolute inset-0 rounded-full border-2 border-transparent group-focus-within:border-secondary-400/30 transition-all duration-500 pointer-events-none" />
+                      <div className="absolute inset-0 rounded-xl border-2 border-transparent group-focus-within:border-secondary-400/30 transition-all duration-500 pointer-events-none" />
                     </div>
-                    <motion.button
-                      type="submit"
-                      className="btn btn-accent px-8 py-4 rounded-full"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
+                    <motion.button type="submit" className="btn btn-accent px-8 py-4">
                       Subscribe <FiSend className="ml-1" size={14} />
                     </motion.button>
                   </form>
                 ) : (
                   <motion.div
-                    className="glass-premium rounded-full py-4 px-6 max-w-md mx-auto inline-flex items-center"
+                    className="glass-premium rounded-2xl py-4 px-6 max-w-md mx-auto inline-flex items-center"
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                   >
@@ -171,7 +170,7 @@ const Newsletter = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
               {benefits.map((benefit, index) => (
                 <motion.div
-                  key={index}
+                  key={benefit.title}
                   className="text-center"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}

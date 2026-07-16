@@ -79,10 +79,10 @@ const Contact = () => {
   ];
 
   const inputClasses =
-    "w-full px-5 py-4 rounded-2xl border border-warm-200 dark:border-dark-600 bg-white dark:bg-dark-700 text-dark-800 dark:text-white focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-300 text-sm";
+    "w-full px-5 py-4 rounded-xl border theme-border-control theme-surface-raised-strong theme-text-primary focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500 transition-all duration-300 text-sm";
 
   return (
-    <section id="contact" className="bg-warm-50 dark:bg-dark-800 relative overflow-hidden">
+    <section id="contact" className="theme-surface-subtle relative overflow-hidden">
       {/* Decorative */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary-100/20 dark:bg-primary-900/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
 
@@ -95,10 +95,10 @@ const Contact = () => {
           className="text-center max-w-3xl mx-auto mb-16"
         >
           <span className="label-text mb-4 block">Get in Touch</span>
-          <h2 className="heading-2 mb-6 text-dark-800 dark:text-white">
+          <h2 className="heading-2 mb-6 theme-text-primary">
             Let's Create Your <span className="text-gradient">Dream Journey</span>
           </h2>
-          <p className="body-lg text-dark-400 dark:text-dark-200">
+          <p className="body-lg theme-text-secondary">
             Our experts are ready to craft your perfect experience.
           </p>
         </motion.div>
@@ -112,8 +112,8 @@ const Contact = () => {
             viewport={{ amount: 0.1, once: true }}
             variants={fadeIn}
           >
-            <div className="bg-white dark:bg-dark-700 rounded-3xl shadow-card p-8 md:p-10 border border-warm-200 dark:border-dark-600">
-              <h3 className="text-2xl font-heading font-bold mb-8 text-dark-800 dark:text-white">
+            <div className="theme-surface-raised-strong rounded-3xl shadow-card p-8 md:p-10 border theme-border-control">
+              <h3 className="text-2xl font-heading font-bold mb-8 theme-text-primary">
                 Send a Message
               </h3>
 
@@ -128,21 +128,21 @@ const Contact = () => {
                     <div className="w-16 h-16 bg-primary-100 dark:bg-primary-800/30 rounded-full flex items-center justify-center mx-auto mb-4 text-primary-600">
                       <FiCheck size={28} />
                     </div>
-                    <h4 className="text-xl font-bold text-dark-800 dark:text-white mb-2">
-                      Message Sent!
-                    </h4>
-                    <p className="text-dark-500 dark:text-dark-200">
-                      Our travel experts will respond shortly.
-                    </p>
+                    <h4 className="text-xl font-bold theme-text-primary mb-2">Message Sent!</h4>
+                    <p className="theme-text-secondary">Our travel experts will respond shortly.</p>
                   </motion.div>
                 ) : (
                   <form ref={formRef} onSubmit={handleSubmit} className="space-y-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-dark-600 dark:text-dark-200 font-medium text-sm mb-2">
+                        <label
+                          htmlFor="contact-name"
+                          className="block theme-text-secondary font-medium text-sm mb-2"
+                        >
                           Full Name *
                         </label>
                         <input
+                          id="contact-name"
                           type="text"
                           name="name"
                           value={formState.name}
@@ -153,10 +153,14 @@ const Contact = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-dark-600 dark:text-dark-200 font-medium text-sm mb-2">
+                        <label
+                          htmlFor="contact-email"
+                          className="block theme-text-secondary font-medium text-sm mb-2"
+                        >
                           Email *
                         </label>
                         <input
+                          id="contact-email"
                           type="email"
                           name="email"
                           value={formState.email}
@@ -170,10 +174,14 @@ const Contact = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div>
-                        <label className="block text-dark-600 dark:text-dark-200 font-medium text-sm mb-2">
+                        <label
+                          htmlFor="contact-phone"
+                          className="block theme-text-secondary font-medium text-sm mb-2"
+                        >
                           Phone
                         </label>
                         <input
+                          id="contact-phone"
                           type="tel"
                           name="phone"
                           value={formState.phone}
@@ -183,10 +191,14 @@ const Contact = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-dark-600 dark:text-dark-200 font-medium text-sm mb-2">
+                        <label
+                          htmlFor="contact-subject"
+                          className="block theme-text-secondary font-medium text-sm mb-2"
+                        >
                           Subject *
                         </label>
                         <select
+                          id="contact-subject"
                           name="subject"
                           value={formState.subject}
                           onChange={handleChange}
@@ -203,10 +215,14 @@ const Contact = () => {
                     </div>
 
                     <div>
-                      <label className="block text-dark-600 dark:text-dark-200 font-medium text-sm mb-2">
+                      <label
+                        htmlFor="contact-message"
+                        className="block theme-text-secondary font-medium text-sm mb-2"
+                      >
                         Message *
                       </label>
                       <textarea
+                        id="contact-message"
                         name="message"
                         value={formState.message}
                         onChange={handleChange}
@@ -217,12 +233,7 @@ const Contact = () => {
                       />
                     </div>
 
-                    <motion.button
-                      type="submit"
-                      className="btn btn-primary w-full py-4"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                    >
+                    <motion.button type="submit" className="btn btn-primary w-full py-4">
                       Send Message <FiSend className="ml-2" size={14} />
                     </motion.button>
                   </form>
@@ -245,10 +256,10 @@ const Contact = () => {
               },
             }}
           >
-            {contactInfo.map((item, index) => (
+            {contactInfo.map((item) => (
               <motion.div
-                key={index}
-                className="bg-white dark:bg-dark-700 rounded-2xl p-6 border border-warm-200 dark:border-dark-600 group hover:shadow-card hover:-translate-y-1 transition-all duration-300"
+                key={item.title}
+                className="theme-surface-raised-strong rounded-2xl p-6 border theme-border-control group hover:shadow-card hover:-translate-y-1 transition-all duration-300"
                 variants={fadeIn}
               >
                 <div className="flex gap-4 items-start">
@@ -256,12 +267,8 @@ const Contact = () => {
                     {item.icon}
                   </div>
                   <div>
-                    <h3 className="font-bold text-dark-800 dark:text-white text-sm mb-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-dark-400 dark:text-dark-300 text-sm leading-relaxed">
-                      {item.details}
-                    </p>
+                    <h3 className="font-bold theme-text-primary text-sm mb-1">{item.title}</h3>
+                    <p className="theme-text-muted text-sm leading-relaxed">{item.details}</p>
                   </div>
                 </div>
               </motion.div>
@@ -276,13 +283,7 @@ const Contact = () => {
               <p className="text-white/60 text-sm mb-4">
                 Schedule a complimentary consultation with our travel experts.
               </p>
-              <motion.button
-                className="btn btn-accent btn-sm"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Book a Call
-              </motion.button>
+              <motion.button className="btn btn-accent btn-sm">Book a Call</motion.button>
             </motion.div>
           </motion.div>
         </div>
