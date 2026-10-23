@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { Variants } from "framer-motion";
-import { motion, AnimatePresence, useInView, useScroll, useTransform } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  stagger,
+  useInView,
+  useScroll,
+  useTransform,
+} from "framer-motion";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { usePageVisibility } from "../../hooks/usePageVisibility";
 import { useScrollRuntime } from "../../runtime/ScrollRuntime";
@@ -54,8 +61,7 @@ const Hero = ({ onBookExperience }: HeroProps) => {
     visible: {
       opacity: 1,
       transition: {
-        delayChildren: 0.3,
-        staggerChildren: 0.12,
+        delayChildren: stagger(0.12, { startDelay: 0.3 }),
       },
     },
   };

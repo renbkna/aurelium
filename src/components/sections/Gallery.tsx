@@ -33,7 +33,7 @@ const Gallery = () => {
   const [selectedImage, setSelectedImage] = useState<ImageData | null>(null);
   const [category, setCategory] = useState("all");
   const previousOverflowRef = useRef("");
-  const [titleRef, titleControls] = useAnimatedScroll({ threshold: 0.1 });
+  const [titleRef, titleVariant] = useAnimatedScroll({ threshold: 0.1 });
 
   const categories = useMemo(
     () => [
@@ -179,7 +179,7 @@ const Gallery = () => {
         <motion.div
           ref={titleRef}
           initial="hidden"
-          animate={titleControls}
+          animate={titleVariant}
           variants={fadeIn}
           className="text-center max-w-3xl mx-auto mb-16"
         >

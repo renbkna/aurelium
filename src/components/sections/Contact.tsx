@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, stagger } from "framer-motion";
 import { FiCheck, FiClock, FiMail, FiMapPin, FiPhone, FiSend } from "react-icons/fi";
 import useAnimatedScroll from "../../hooks/useAnimatedScroll";
 
@@ -19,7 +19,7 @@ const Contact = () => {
     reset: null,
     submit: null,
   });
-  const [titleRef, titleControls] = useAnimatedScroll({ threshold: 0.1 });
+  const [titleRef, titleVariant] = useAnimatedScroll({ threshold: 0.1 });
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
@@ -90,7 +90,7 @@ const Contact = () => {
         <motion.div
           ref={titleRef}
           initial="hidden"
-          animate={titleControls}
+          animate={titleVariant}
           variants={fadeIn}
           className="text-center max-w-3xl mx-auto mb-16"
         >
@@ -252,7 +252,7 @@ const Contact = () => {
               hidden: { opacity: 0 },
               visible: {
                 opacity: 1,
-                transition: { delayChildren: 0.3, staggerChildren: 0.1 },
+                transition: { delayChildren: stagger(0.1, { startDelay: 0.3 }) },
               },
             }}
           >

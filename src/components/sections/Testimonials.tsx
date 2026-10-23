@@ -9,7 +9,7 @@ const starKeys = ["first", "second", "third", "fourth", "fifth"] as const;
 const Testimonials = () => {
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [titleRef, titleControls] = useAnimatedScroll({ threshold: 0.1 });
+  const [titleRef, titleVariant] = useAnimatedScroll({ threshold: 0.1 });
 
   const testimonials = [
     {
@@ -94,7 +94,7 @@ const Testimonials = () => {
         <motion.div
           ref={titleRef}
           initial="hidden"
-          animate={titleControls}
+          animate={titleVariant}
           variants={fadeIn}
           className="text-center max-w-3xl mx-auto mb-20"
         >

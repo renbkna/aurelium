@@ -1,6 +1,5 @@
 import { useInView } from "react-intersection-observer";
-import { useAnimation } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 
 interface UseAnimatedScrollOptions {
   threshold?: number;
@@ -8,42 +7,28 @@ interface UseAnimatedScrollOptions {
   delay?: number;
 }
 
+type ScrollVariant = "hidden" | "visible";
+
+/** Returns the variant label a motion element should animate to as it scrolls into view. */
 export default function useAnimatedScroll({
   threshold = 0.2,
   triggerOnce = true,
   delay = 0,
 }: UseAnimatedScrollOptions = {}) {
-  const controls = useAnimation();
   const [ref, inView] = useInView({
     threshold,
     triggerOnce,
   });
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [variant, setVariant] = useState<ScrollVariant>("hidden");
 
   useEffect(() => {
     if (!inView) {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-      void controls.start("hidden");
-    } else {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      timeoutRef.current = setTimeout(() => {
-        void controls.start("visible");
-        timeoutRef.current = null;
-      }, delay);
+      setVariant("hidden");
+      return undefined;
     }
+    const timeout = setTimeout(() => setVariant("visible"), delay);
+    return () => clearTimeout(timeout);
+  }, [inView, delay]);
 
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
-  }, [controls, inView, delay]);
-
-  return [ref, controls, inView] as const;
+  return [ref, variant, inView] as const;
 }

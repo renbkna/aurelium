@@ -10,7 +10,7 @@ const Destinations = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const isDesktopPinning = useMediaQuery("(min-width: 769px)");
   const [scrollDistance, setScrollDistance] = useState(0);
-  const [titleRef, titleControls] = useAnimatedScroll({ threshold: 0.1 });
+  const [titleRef, titleVariant] = useAnimatedScroll({ threshold: 0.1 });
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
@@ -126,7 +126,7 @@ const Destinations = () => {
           <motion.div
             ref={titleRef}
             initial="hidden"
-            animate={titleControls}
+            animate={titleVariant}
             variants={titleAnimation}
             className="flex flex-col md:flex-row md:items-end md:justify-between gap-6"
           >

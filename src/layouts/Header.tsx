@@ -1,6 +1,6 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Variants } from "framer-motion";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, stagger } from "framer-motion";
 import { FiMenu, FiMoon, FiSun, FiX } from "react-icons/fi";
 import { useTheme } from "../contexts/ThemeContext";
 import { useMediaQuery } from "../hooks/useMediaQuery";
@@ -88,8 +88,7 @@ const Header = ({ onBookExperience }: HeaderProps) => {
       opacity: 1,
       transition: {
         duration: 0.6,
-        staggerChildren: 0.08,
-        delayChildren: 0.2,
+        delayChildren: stagger(0.08, { startDelay: 0.2 }),
       },
       y: 0,
     },
@@ -110,8 +109,7 @@ const Header = ({ onBookExperience }: HeaderProps) => {
         type: "spring",
         stiffness: 400,
         damping: 40,
-        staggerChildren: 0.08,
-        delayChildren: 0.1,
+        delayChildren: stagger(0.08, { startDelay: 0.1 }),
       },
       x: "0%",
     },

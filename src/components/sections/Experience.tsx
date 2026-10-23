@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useEffect } from "react";
-import { motion, useInView, animate } from "framer-motion";
+import { motion, useInView, animate, stagger } from "framer-motion";
 import { FiAward, FiMapPin, FiShield, FiStar, FiUsers } from "react-icons/fi";
 import useAnimatedScroll from "../../hooks/useAnimatedScroll";
 import { responsiveImage } from "../../utils/responsiveImage";
@@ -43,7 +43,7 @@ const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
 };
 
 const Experience = () => {
-  const [containerRef, containerControls] = useAnimatedScroll({
+  const [containerRef, containerVariant] = useAnimatedScroll({
     threshold: 0.15,
   });
   const statsRef = useRef(null);
@@ -66,7 +66,7 @@ const Experience = () => {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
+        delayChildren: stagger(0.15),
       },
     },
   };
@@ -151,7 +151,7 @@ const Experience = () => {
         <motion.div
           ref={containerRef}
           initial="hidden"
-          animate={containerControls}
+          animate={containerVariant}
           variants={fadeIn}
           className="text-center max-w-3xl mx-auto mb-20"
         >
@@ -170,7 +170,7 @@ const Experience = () => {
         {/* Feature cards with 3D tilt */}
         <motion.div
           initial="hidden"
-          animate={containerControls}
+          animate={containerVariant}
           variants={staggeredItems}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24"
         >

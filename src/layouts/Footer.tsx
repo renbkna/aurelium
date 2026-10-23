@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, stagger } from "framer-motion";
 import { FiArrowUp, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
 import {
   FaFacebookF,
@@ -26,11 +26,11 @@ const Footer = () => {
     },
   };
 
-  const staggerChildren = {
+  const staggeredList = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { delayChildren: 0.2, staggerChildren: 0.06 },
+      transition: { delayChildren: stagger(0.06, { startDelay: 0.2 }) },
     },
   };
 
@@ -161,7 +161,7 @@ const Footer = () => {
             <h3 className="text-sm font-bold uppercase tracking-wider mb-5 text-secondary-400">
               Destinations
             </h3>
-            <motion.ul className="space-y-2.5" variants={staggerChildren}>
+            <motion.ul className="space-y-2.5" variants={staggeredList}>
               {destinations.map((dest) => (
                 <motion.li key={dest} variants={fadeInUp}>
                   <a
@@ -186,7 +186,7 @@ const Footer = () => {
             <h3 className="text-sm font-bold uppercase tracking-wider mb-5 text-secondary-400">
               Experiences
             </h3>
-            <motion.ul className="space-y-2.5" variants={staggerChildren}>
+            <motion.ul className="space-y-2.5" variants={staggeredList}>
               {experiences.map((exp) => (
                 <motion.li key={exp} variants={fadeInUp}>
                   <a

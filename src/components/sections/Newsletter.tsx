@@ -7,7 +7,7 @@ import { responsiveImage } from "../../utils/responsiveImage";
 const Newsletter = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
-  const [containerRef, containerControls] = useAnimatedScroll({
+  const [containerRef, containerVariant] = useAnimatedScroll({
     threshold: 0.2,
   });
   const timeoutRef = useRef<number | undefined>(undefined);
@@ -57,7 +57,7 @@ const Newsletter = () => {
         <motion.div
           ref={containerRef}
           initial="hidden"
-          animate={containerControls}
+          animate={containerVariant}
           variants={{
             hidden: { opacity: 0, y: 60 },
             visible: {

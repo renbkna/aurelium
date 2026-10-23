@@ -19,7 +19,7 @@ const getTimeLeft = (deadline: number) => {
 };
 
 const ExclusiveOffers = () => {
-  const [containerRef, containerControls] = useAnimatedScroll({
+  const [containerRef, containerVariant] = useAnimatedScroll({
     threshold: 0.1,
   });
   const [sectionRef, sectionInView] = useInView({ threshold: 0, rootMargin: "200px" });
@@ -106,7 +106,7 @@ const ExclusiveOffers = () => {
         <motion.div
           ref={containerRef}
           initial="hidden"
-          animate={containerControls}
+          animate={containerVariant}
           variants={fadeIn}
           className="text-center max-w-3xl mx-auto mb-20"
         >

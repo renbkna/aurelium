@@ -15,7 +15,7 @@ import { responsiveImage } from "../../utils/responsiveImage";
 
 const Services = () => {
   const sectionRef = useRef(null);
-  const [titleRef, titleControls] = useAnimatedScroll({ threshold: 0.1 });
+  const [titleRef, titleVariant] = useAnimatedScroll({ threshold: 0.1 });
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start 80%", "center center"],
@@ -146,7 +146,7 @@ const Services = () => {
             <motion.div
               ref={titleRef}
               initial="hidden"
-              animate={titleControls}
+              animate={titleVariant}
               variants={fadeIn}
               className="max-w-xl"
             >
