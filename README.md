@@ -1,67 +1,27 @@
 # Aurelium
 
-Aurelium is a luxury travel landing page focused on polished motion, responsive UI, and premium visual design.
+A fictional small-group travel company whose whole idea is timing: six journeys, each run only in
+the weeks its place is at its finest. A design piece by [renbkna](https://github.com/renbkna).
 
-![Aurelium](./public/aurelium.png)
+- **Year dial** (home): every journey is a track on one dial, lit by how fine each month is. Turn
+  the dial (drag, click, or arrow keys) and the journeys re-rank for that month; `?month=nov` links
+  to a month.
+- **Light diary** (journey pages): each itinerary day shows sunrise, golden hour and sunset at the
+  journey's base for the chosen departure, computed from its coordinates with SunCalc.
+- **Request a place**: a validated form that ends in a confirmation. Nothing is sent anywhere.
 
 ## Stack
 
-- React 19
-- Vite 8
-- Tailwind CSS 4
-- Framer Motion
-- GSAP
-- Lenis
-- TypeScript
+SvelteKit 3 (fully prerendered, Vercel adapter, Node 24), Svelte 5 runes, Tailwind CSS 4,
+TypeScript, Vitest. Photography from Unsplash.
 
-## Features
+## Commands
 
-- Responsive single-page layout
-- Section animations and scroll-driven interactions
-- Destination and gallery content blocks
-- Light and dark theme toggle
-- Custom cursor and UI motion accents
-
-## Tooling
-
-- `oxlint` for linting (strict correctness/suspicious profile + React/import/a11y/promise plugins)
-- `oxfmt` for formatting
-- `tsc --noEmit` for TypeScript type checking
-- `knip` for dependency usage checks
-
-## Scripts
-
-```bash
-# development
-npm run dev
-
-# production build and preview
-npm run build
-npm run preview
-
-# linting and type checks
-npm run lint
-npm run lint:fix
-
-# formatting
-npm run format
-npm run format:check
-
-# dependency usage audit
-npm run deps:check
-```
-
-## Run locally
-
-```bash
-git clone https://github.com/renbkna/aurelium.git
-cd aurelium
-
-# with npm
-npm install
-npm run dev
-
-# or with bun
-bun install
-bun run dev
+```sh
+pnpm install
+pnpm dev        # local server
+pnpm check      # svelte-check
+pnpm lint       # prettier + eslint
+pnpm test       # unit tests (ranking, journey data, sun times)
+pnpm build      # static output in .vercel/output
 ```
