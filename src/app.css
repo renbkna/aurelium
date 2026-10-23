@@ -1,22 +1,35 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/geist-mono';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
 
 @theme {
 	--font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
 	--font-mono: 'Geist Mono Variable', ui-monospace, monospace;
+	--font-serif: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
 
-	/* An instrument at dusk: near-black ground, warm bone type, gold reserved for light itself. */
-	--color-night: #0c0b09;
-	--color-night-2: #15130f;
-	--color-bone: #ede5d8;
-	--color-mist: #a39a8d;
-	--color-hair: rgb(237 229 216 / 0.14);
+	/* A darkened cinema: near-black ground, warm bone type, gold only where light falls. */
+	--color-night: #0a0908;
+	--color-night-2: #14120f;
+	--color-bone: #f1eadf;
+	--color-mist: #b3a998;
+	--color-hair: rgb(241 234 223 / 0.16);
 	--color-gold: #f0b358;
-	--color-ember: #c9772f;
 	--color-alert: #ff8a6b;
 
 	--ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+	--animate-drift: drift 16s ease-out both;
+
+	@keyframes drift {
+		from {
+			transform: scale(1.12) translate3d(1.5%, 1%, 0);
+		}
+		to {
+			transform: scale(1.02) translate3d(0, 0, 0);
+		}
+	}
 }
 
 @layer base {
@@ -24,7 +37,6 @@
 		background: var(--color-night);
 		color: var(--color-bone);
 		font-family: var(--font-sans);
-		font-feature-settings: 'ss01', 'cv11';
 		-webkit-font-smoothing: antialiased;
 		color-scheme: dark;
 	}
@@ -39,6 +51,15 @@
 		outline-offset: 3px;
 	}
 
+	@media (prefers-reduced-motion: reduce) {
+		*,
+		*::before,
+		*::after {
+			animation-duration: 0.01ms !important;
+			animation-iteration-count: 1 !important;
+		}
+	}
+
 	@media (prefers-reduced-motion: no-preference) {
 		html {
 			scroll-behavior: smooth;
@@ -46,7 +67,15 @@
 	}
 }
 
-/* Small uppercase label, the way an instrument names its scales. */
+/* Film-title type: the serif, set large and tight. */
+@utility title {
+	font-family: var(--font-serif);
+	font-weight: 400;
+	letter-spacing: -0.015em;
+	line-height: 0.95;
+}
+
+/* Small uppercase label for scales, credits and meta. */
 @utility label {
 	font-family: var(--font-mono);
 	font-size: 0.7rem;
@@ -55,8 +84,7 @@
 	color: var(--color-mist);
 }
 
-@utility display {
-	font-weight: 500;
-	letter-spacing: -0.045em;
-	line-height: 0.92;
+/* Keeps type legible over any photograph. */
+@utility text-shadow-photo {
+	text-shadow: 0 1px 24px rgb(0 0 0 / 0.45);
 }

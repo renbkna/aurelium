@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { journeys } from '#lib/data/journeys.ts';
+import { photos } from '#lib/data/photos.ts';
 import { rankJourneys } from '#lib/finder.ts';
 import { monthOfDate } from '#lib/format.ts';
 import { MONTH_INDICES } from '#lib/season.ts';
@@ -19,6 +20,14 @@ describe('rankJourneys', () => {
 		expect(first.journey.slug).toBe('kyoto-in-the-maple-weeks');
 		expect(first.departures.map((d) => d.start)).toEqual(['2027-11-18', '2027-11-29']);
 		expect(second.journey.slug).toBe('jordan-petra-and-wadi-rum');
+	});
+});
+
+describe('photo catalogue', () => {
+	it('shows every photo exactly once, so each credited image is one the site uses', () => {
+		const used = journeys.flatMap((j) => [j.cover, ...j.itinerary.map((stop) => stop.photo)]);
+		expect(new Set(used).size).toBe(used.length);
+		expect(new Set(used)).toEqual(new Set(Object.values(photos)));
 	});
 });
 

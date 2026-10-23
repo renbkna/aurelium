@@ -2,16 +2,16 @@
 	import { resolve } from '$app/paths';
 </script>
 
-<header class="absolute inset-x-0 top-0 z-20">
-	<div class="mx-auto flex max-w-[96rem] items-baseline justify-between gap-6 px-5 py-6 sm:px-10">
-		<a href={resolve('/')} class="flex items-baseline gap-3" aria-label="Aurelium, home">
-			<span class="text-lg font-semibold tracking-[-0.03em]">Aurelium</span>
-			<span class="hidden font-mono text-[0.7rem] text-mist sm:inline"
-				>Journeys timed to the year</span
-			>
+<header class="absolute inset-x-0 top-0 z-20 text-shadow-photo">
+	<div class="mx-auto flex max-w-[96rem] items-center justify-between gap-6 px-5 py-6 sm:px-10">
+		<a href={resolve('/')} class="title text-[1.9rem] leading-none" aria-label="Aurelium, home">
+			Aurelium
 		</a>
-		<p class="hidden font-mono text-[0.7rem] text-mist sm:block">
-			Season 2027 · 6 journeys · ≤ 12 guests
-		</p>
+		<nav aria-label="Main">
+			<ul class="flex items-center gap-7 text-sm">
+				<li><a href="{resolve('/')}#six-title" class="hover:text-gold">Journeys</a></li>
+				<li><a href={resolve('/credits')} class="hover:text-gold">Credits</a></li>
+			</ul>
+		</nav>
 	</div>
 </header>

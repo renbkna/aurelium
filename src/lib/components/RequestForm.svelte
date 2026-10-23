@@ -53,7 +53,7 @@
 		role="status"
 	>
 		<p class="font-mono text-xs text-gold">{reference} · HELD 48 H</p>
-		<h3 class="mt-5 text-4xl display">Your places are held, {name.trim().split(' ')[0]}.</h3>
+		<h3 class="display mt-5 text-4xl">Your places are held, {name.trim().split(' ')[0]}.</h3>
 		<p class="mt-5 max-w-lg leading-relaxed text-bone/80">
 			{travellers}
 			{travellers === 1 ? 'place' : 'places'} on {journey.name}, from {formatLongDate(
